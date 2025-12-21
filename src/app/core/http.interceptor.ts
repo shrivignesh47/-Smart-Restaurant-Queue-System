@@ -15,8 +15,7 @@ export class HttpInterceptorService implements HttpInterceptor {
 
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        // TODO: Implement error handling logic
-        console.error('HTTP Error:', error);
+        // TODO: Implement proper error handling and logging service
         return throwError(() => error);
       })
     );
