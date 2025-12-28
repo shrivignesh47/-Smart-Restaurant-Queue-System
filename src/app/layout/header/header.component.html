@@ -2,11 +2,39 @@
   <div class="container flex justify-between items-center w-full">
     <span class="logo">SysQueue</span>
     
-    <div class="nav-links">
+    <div class="nav-links flex items-center gap-4">
       <a mat-button routerLink="/">Home</a>
       <a mat-button routerLink="/restaurants">Restaurants</a>
-      <a mat-button routerLink="/partner">Partner With Us</a>
-      <a mat-flat-button color="accent" routerLink="/login">Login</a>
+      
+      <!-- Logged In Menu -->
+      <ng-container *ngIf="currentUser; else loginBtn">
+        <a mat-button routerLink="/tables">My Tables</a>
+        <a mat-button routerLink="/reservation">My Reservations</a>
+        
+        <button mat-button [matMenuTriggerFor]="profileMenu" class="profile-btn">
+            <div class="flex items-center gap-2">
+                <img [src]="currentUser.avatar || 'assets/images/hero1.png'" class="w-8 h-8 rounded-full border border-gray-300">
+                <span>{{ currentUser.name }}</span>
+                <mat-icon>arrow_drop_down</mat-icon>
+            </div>
+        </button>
+        <mat-menu #profileMenu="matMenu">
+            <button mat-menu-item>
+                <mat-icon>person</mat-icon>
+                <span>Profile</span>
+            </button>
+            <button mat-menu-item (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                <span>Logout</span>
+            </button>
+        </mat-menu>
+      </ng-container>
+
+      <!-- Guest -->
+      <ng-template #loginBtn>
+        <a mat-button routerLink="/partner">Partner With Us</a>
+        <a mat-flat-button color="accent" routerLink="/login">Login</a>
+      </ng-template>
     </div>
   </div>
 </mat-toolbar>

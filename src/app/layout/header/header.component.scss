@@ -31,6 +31,15 @@
   display: flex;
   gap: 24px;
   align-items: center;
+  flex-wrap: wrap; // Allow wrapping if space is tight
+
+  @media (max-width: 768px) {
+    gap: 12px;
+    
+    a {
+        font-size: 0.9rem;
+    }
+  }
 
   a {
     font-weight: 500;
@@ -57,4 +66,13 @@
     border-radius: 50px;
     padding: 0 28px;
   }
+}
+
+.profile-btn {
+    img {
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
 }

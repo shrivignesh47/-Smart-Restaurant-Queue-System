@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>Confirm Booking</h2>
+<mat-dialog-content>
+  <p>You are booking <strong>{{ data.tableName }}</strong>.</p>
+  <p class="text-sm text-gray-500 mb-4">Please provide your details to confirm the reservation.</p>
+
+  <form [formGroup]="bookingForm" class="flex flex-col gap-3">
+    <!-- Step 1: User Details -->
+    <ng-container *ngIf="!showOtp">
+        <mat-form-field appearance="outline">
+        <mat-label>Full Name</mat-label>
+        <input matInput formControlName="name" placeholder="John Doe">
+        <mat-error *ngIf="bookingForm.get('name')?.hasError('required')">Name is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+        <mat-label>Phone Number</mat-label>
+        <input matInput formControlName="phone" placeholder="1234567890" type="tel">
+        <mat-error *ngIf="bookingForm.get('phone')?.hasError('required')">Phone is required</mat-error>
+        <mat-error *ngIf="bookingForm.get('phone')?.hasError('pattern')">Enter a valid 10-digit phone number</mat-error>
+        </mat-form-field>
+    </ng-container>
+
+    <!-- Step 2: OTP -->
+    <ng-container *ngIf="showOtp">
+        <div class="bg-green-50 p-3 rounded mb-2 text-green-800 text-sm">
+            OTP sent to {{ bookingForm.get('phone')?.value }}
+        </div>
+        <mat-form-field appearance="outline">
+            <mat-label>Enter OTP</mat-label>
+            <input matInput formControlName="otp" placeholder="1234" maxlength="4">
+            <mat-hint>Use 1234 for testing</mat-hint>
+        </mat-form-field>
+    </ng-container>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" 
+          [disabled]="(!showOtp && (bookingForm.get('name')?.invalid || bookingForm.get('phone')?.invalid)) || (showOtp && !bookingForm.get('otp')?.value)" 
+          (click)="onConfirm()">
+      {{ showOtp ? 'Verify & Book' : 'Proceed' }}
+  </button>
+</mat-dialog-actions>

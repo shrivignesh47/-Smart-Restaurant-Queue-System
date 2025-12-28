@@ -1,0 +1,125 @@
+<div class="tables-container">
+  
+  <!-- My Bookings View -->
+  <div *ngIf="!restaurantId && currentUser; else restaurantTables">
+      <h2 class="mb-4 text-2xl font-bold">My Booked Tables</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="myBookings.length; else noBookings">
+          <mat-card *ngFor="let booking of myBookings" class="booking-card">
+              <mat-card-header>
+                  <mat-icon mat-card-avatar class="text-primary">restaurant</mat-icon>
+                  <mat-card-title>{{ booking.restaurantName }}</mat-card-title>
+                  <mat-card-subtitle>{{ booking.time }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content class="mt-4">
+                  <div class="flex justify-between mb-2">
+                      <span class="text-gray-600">Table:</span>
+                      <span class="font-bold">{{ booking.tableName }}</span>
+                  </div>
+                  <div class="flex justify-between mb-2">
+                      <span class="text-gray-600">Guests:</span>
+                      <span class="font-bold">{{ booking.guests }} People</span>
+                  </div>
+                  <div class="flex justify-between mb-2">
+                      <span class="text-gray-600">Ticket ID:</span>
+                      <span class="font-mono bg-gray-100 px-2 rounded">{{ booking.ticketId }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                      <span class="text-gray-600">Status:</span>
+                      <span class="px-2 py-0.5 rounded text-sm" 
+                            [ngClass]="booking.status === 'Confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'">
+                          {{ booking.status }}
+                      </span>
+                  </div>
+              </mat-card-content>
+              <mat-card-actions align="end">
+                  <button mat-button color="primary">View Details</button>
+                  <button mat-button color="warn">Cancel</button>
+              </mat-card-actions>
+          </mat-card>
+      </div>
+
+      <ng-template #noBookings>
+          <div class="text-center p-8 bg-gray-50 rounded-lg">
+              <mat-icon class="text-4xl text-gray-400 mb-2">table_restaurant</mat-icon>
+              <p>You haven't booked any tables yet.</p>
+              <button mat-raised-button color="primary" routerLink="/restaurants" class="mt-4">Find a Restaurant</button>
+          </div>
+      </ng-template>
+  </div>
+
+  <!-- Restaurant Tables View -->
+  <ng-template #restaurantTables>
+  <!-- All Full Warning -->
+  <div *ngIf="isAllFull" class="full-warning mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded flex justify-between items-center">
+    <span>All tables are currently full.</span>
+    <button mat-stroked-button color="warn" (click)="joinGeneralQueue()">Join Waitlist</button>
+  </div>
+
+  <div class="flex justify-between items-center mb-4">
+    <h3>Available Tables</h3>
+    <div class="filters">
+        <mat-chip-listbox aria-label="Table Filter">
+            <mat-chip-option selected>All</mat-chip-option>
+            <mat-chip-option>Indoor</mat-chip-option>
+            <mat-chip-option>Outdoor</mat-chip-option>
+        </mat-chip-listbox>
+    </div>
+  </div>
+
+  <div class="tables-grid">
+    <div class="table-card" *ngFor="let table of tables" [ngClass]="getTableStatusClass(table.status)">
+      <div class="card-header flex justify-between w-full mb-2">
+         <div class="table-icon">
+            <mat-icon>table_restaurant</mat-icon>
+         </div>
+         <button mat-icon-button color="accent" (click)="openInfo(table)" matTooltip="Info">
+            <mat-icon>info</mat-icon>
+         </button>
+      </div>
+      
+      <div class="table-info">
+        <h4>{{ table.name }}</h4>
+        <p class="capacity"><mat-icon inline>people</mat-icon> {{ table.capacity }} Seats</p>
+        <span class="status-badge">{{ table.status }}</span>
+        
+        <!-- Booking Info -->
+        <div *ngIf="table.bookedBy" class="booking-info mt-2 p-2 bg-green-50 rounded text-xs text-left border border-green-200">
+            <p class="font-bold text-green-800 mb-1">Booked</p>
+            <p><strong>Name:</strong> {{ table.bookedBy }}</p>
+            <p><strong>Ticket:</strong> {{ table.ticketId }}</p>
+        </div>
+      </div>
+      <div class="actions mt-3 w-full">
+        <button mat-flat-button 
+                [color]="table.status === 'Available' ? 'primary' : 'warn'" 
+                class="w-full"
+                (click)="handleTableAction(table)">
+            {{ table.status === 'Available' ? 'Book' : 'Join Queue' }}
+        </button>
+      </div>
+    </div>
+  </div>
+  </ng-template>
+</div>
+
+<!-- Info Dialog Template -->
+<ng-template #infoDialog>
+    <h2 mat-dialog-title>{{ selectedTable?.name }} Info</h2>
+    <mat-dialog-content>
+        <div class="info-content">
+            <p><strong>Type:</strong> {{ selectedTable?.type }}</p>
+            <p><strong>Capacity:</strong> {{ selectedTable?.capacity }} people</p>
+            <p><strong>Features:</strong></p>
+            <ul>
+                <li *ngFor="let feature of selectedTable?.features">{{ feature }}</li>
+            </ul>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close>Close</button>
+        <button mat-flat-button color="primary" [mat-dialog-close]="true" (click)="handleTableAction(selectedTable)">
+            {{ selectedTable?.status === 'Available' ? 'Book Now' : 'Join Queue' }}
+        </button>
+    </mat-dialog-actions>
+</ng-template>

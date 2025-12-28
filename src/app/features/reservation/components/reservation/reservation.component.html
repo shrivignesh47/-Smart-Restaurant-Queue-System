@@ -1,0 +1,97 @@
+<div class="reservation-container">
+    
+    <!-- My Reservations View -->
+    <div *ngIf="!restaurantId && currentUser; else makeReservation">
+        <h2 class="mb-4 text-2xl font-bold">My Reservations</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="myReservations.length; else noReservations">
+            <mat-card *ngFor="let res of myReservations" class="reservation-card-item">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar class="text-accent">event</mat-icon>
+                    <mat-card-title>{{ res.restaurantName }}</mat-card-title>
+                    <mat-card-subtitle>ID: {{ res.id }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content class="mt-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Date:</span>
+                        <span class="font-bold">{{ res.date | date:'mediumDate' }}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Time:</span>
+                        <span class="font-bold">{{ res.time }}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Guests:</span>
+                        <span class="font-bold">{{ res.guests }} People</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status:</span>
+                        <span class="px-2 py-0.5 rounded text-sm bg-green-100 text-green-800">
+                            {{ res.status }}
+                        </span>
+                    </div>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                    <button mat-button color="warn">Cancel</button>
+                </mat-card-actions>
+            </mat-card>
+        </div>
+
+        <ng-template #noReservations>
+            <div class="text-center p-8 bg-gray-50 rounded-lg">
+                <mat-icon class="text-4xl text-gray-400 mb-2">event_busy</mat-icon>
+                <p>You have no upcoming reservations.</p>
+                <button mat-raised-button color="primary" routerLink="/restaurants" class="mt-4">Make a Reservation</button>
+            </div>
+        </ng-template>
+    </div>
+
+    <!-- Make Reservation View -->
+    <ng-template #makeReservation>
+    <div class="reservation-card">
+        <h3>Book a Table</h3>
+        
+        <form class="reservation-form">
+            <div class="form-row">
+                <mat-form-field appearance="outline">
+                    <mat-label>Date</mat-label>
+                    <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" name="date">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Guests</mat-label>
+                    <mat-select [(ngModel)]="guests" name="guests">
+                        <mat-option [value]="1">1 Person</mat-option>
+                        <mat-option [value]="2">2 People</mat-option>
+                        <mat-option [value]="3">3 People</mat-option>
+                        <mat-option [value]="4">4 People</mat-option>
+                        <mat-option [value]="5">5 People</mat-option>
+                        <mat-option [value]="6">6+ People</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <div class="time-slots-section">
+                <h4>Available Times</h4>
+                <div class="slots-grid">
+                    <div 
+                        class="time-slot" 
+                        *ngFor="let time of timeSlots" 
+                        [class.selected]="selectedTime === time"
+                        (click)="selectTime(time)">
+                        {{ time }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions mt-4">
+                <button mat-raised-button color="primary" class="w-full large-btn" [disabled]="!selectedTime">
+                    Confirm Reservation
+                </button>
+            </div>
+        </form>
+    </div>
+    </ng-template>
+</div>

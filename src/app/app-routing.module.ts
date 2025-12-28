@@ -28,8 +28,27 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'restaurants/tables',
+    redirectTo: 'tables',
+    pathMatch: 'full'
+  },
+  {
+    path: 'restaurants',
+    redirectTo: '',
+    pathMatch: 'full'
+  },
+  {
+    path: 'login',
+    redirectTo: '',
+    pathMatch: 'full'
+  },
+  {
+    path: ':restaurantName',
+    loadChildren: () => import('./features/restaurant/restaurant.module').then(m => m.RestaurantModule)
+  },
+  {
     path: '**',
-    redirectTo: '/'
+    redirectTo: ''
   }
 ];
 
