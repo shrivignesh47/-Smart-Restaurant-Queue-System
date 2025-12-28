@@ -1,16 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from './material.module';
+import { HeroCarouselComponent } from './components/hero-carousel/hero-carousel.component';
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    HeroCarouselComponent
+  ],
   imports: [
     CommonModule,
     MaterialModule
   ],
   exports: [
     CommonModule,
-    MaterialModule
+    MaterialModule,
+    HeroCarouselComponent
   ]
 })
 export class SharedModule { }

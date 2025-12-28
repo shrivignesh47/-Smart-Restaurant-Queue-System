@@ -1,5 +1,12 @@
-<mat-toolbar color="primary">
-  <span>Smart Restaurant Queue System</span>
-  <span class="spacer"></span>
-  <!-- TODO: Add navigation links and user menu -->
+<mat-toolbar color="primary" class="sticky-header">
+  <div class="container flex justify-between items-center w-full">
+    <span class="logo">SysQueue</span>
+    
+    <div class="nav-links">
+      <a mat-button routerLink="/">Home</a>
+      <a mat-button routerLink="/restaurants">Restaurants</a>
+      <a mat-button routerLink="/partner">Partner With Us</a>
+      <a mat-flat-button color="accent" routerLink="/login">Login</a>
+    </div>
+  </div>
 </mat-toolbar>

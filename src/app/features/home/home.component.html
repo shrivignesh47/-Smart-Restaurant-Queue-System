@@ -1,0 +1,90 @@
+<!-- Hero Carousel -->
+<app-hero-carousel [slides]="heroSlides"></app-hero-carousel>
+
+<!-- Restaurant Discovery -->
+<section class="section restaurants-section">
+    <div class="container">
+        <div class="section-header flex justify-between items-center my-4">
+            <h2>Restaurants Near You</h2>
+
+            <mat-form-field appearance="outline" class="location-select">
+                <mat-label>Location</mat-label>
+                <mat-select value="city">
+                    <mat-option value="city">New York, NY</mat-option>
+                    <mat-option value="area">Los Angeles, CA</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <div class="restaurant-grid">
+            <mat-card class="restaurant-card" *ngFor="let rest of restaurants">
+                <img mat-card-image [src]="rest.image" [alt]="rest.name">
+                <mat-card-content>
+                    <div class="flex justify-between items-center mt-2">
+                        <h3 class="mat-h3 mb-0">{{ rest.name }}</h3>
+                        <span class="rating-badge"><mat-icon class="star-icon">star</mat-icon> {{ rest.rating }}</span>
+                    </div>
+                    <div class="cuisine-tags">
+                        <span class="tag" *ngFor="let cuisine of rest.cuisine">{{ cuisine }}</span>
+                    </div>
+
+                    <div class="status-info flex justify-between mt-3">
+                        <div class="queue-status" [ngClass]="rest.status.toLowerCase()">
+                            <span class="dot"></span> {{ rest.status }} Queue
+                        </div>
+                        <div class="wait-time">
+                            <mat-icon inline>schedule</mat-icon> ~{{ rest.waitTime }}
+                        </div>
+                    </div>
+                </mat-card-content>
+                <mat-card-actions>
+                    <button mat-stroked-button color="primary" class="w-full">View Restaurant</button>
+                </mat-card-actions>
+            </mat-card>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section features-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Everything You Need</h2>
+            <p class="subtitle">A complete solution for modern restaurant operations</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card" *ngFor="let feature of features">
+                <div class="icon-square">
+                    <mat-icon>{{ feature.icon }}</mat-icon>
+                </div>
+                <h3>{{ feature.title }}</h3>
+                <p>{{ feature.desc }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Transformation Section -->
+<section class="section transform-section text-center">
+    <div class="container">
+        <div class="icon-square large mx-auto">
+            <mat-icon>groups</mat-icon>
+        </div>
+        <h2>Ready to Transform Your Restaurant?</h2>
+        <p>Join hundreds of restaurants using TableFlow to streamline their operations and delight their customers.</p>
+    </div>
+</section>
+
+<!-- Partner Integration -->
+<section class="section partner-section">
+    <div class="container">
+        <div class="partner-card">
+            <div class="partner-content">
+                <h2>Already using a queue system?</h2>
+                <p>Integrate your existing queue system with SysQueue for a seamless booking experience.</p>
+                <button mat-raised-button color="primary" routerLink="/partner">Become a Partner</button>
+            </div>
+        </div>
+    </div>
+</section>

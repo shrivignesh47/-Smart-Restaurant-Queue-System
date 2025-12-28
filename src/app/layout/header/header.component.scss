@@ -1,3 +1,60 @@
-.spacer {
-  flex: 1 1 auto;
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); // Lighter shadow
+  background: white !important; // White header as per reference
+  color: var(--primary-color) !important; // Dark text
+  padding: 0 16px;
+  width: 100%;
+  box-sizing: border-box; // Ensure padding is included in width
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  letter-spacing: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+  }
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+
+  a {
+    font-weight: 500;
+    color: var(--primary-color); // Dark text
+    opacity: 0.8;
+    transition: opacity 0.3s;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &.mat-mdc-button-base {
+      color: var(--primary-color) !important;
+    }
+
+    &.mat-mdc-raised-button {
+      color: #fff !important;
+      background: var(--primary-color) !important; // Dark pill button
+    }
+  }
+
+  // Custom sign in button styling matching reference
+  a[routerLink="/login"] {
+    border-radius: 50px;
+    padding: 0 28px;
+  }
 }
