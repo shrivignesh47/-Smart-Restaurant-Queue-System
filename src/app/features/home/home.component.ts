@@ -77,11 +77,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     { name: 'Emily R.', role: 'Daily Customer', comment: 'Booking a table has never been easier. Highly recommended!', avatar: 'assets/images/hero1.png' }
   ];
 
-  howItWorks = [
-    { step: 1, title: 'Find Restaurant', desc: 'Browse top-rated restaurants near you.', icon: 'search' },
-    { step: 2, title: 'Check Status', desc: 'View real-time queue status and wait times.', icon: 'visibility' },
-    { step: 3, title: 'Join Queue', desc: 'Join the queue remotely or book a table.', icon: 'queue' },
-    { step: 4, title: 'Enjoy', desc: 'Arrive just in time for your table.', icon: 'restaurant' }
+  customerFeatures = [
+    { title: 'Join the Waiting Queue', desc: 'Join the waiting queue for a table.', icon: 'people' },
+    { title: 'Book a Table in Advance', desc: 'Book a table in advance (if available).', icon: 'event_available' },
+    { title: 'Real-Time Queue Position', desc: 'View real-time queue position and estimated waiting time.', icon: 'schedule' }
   ];
 
   ngOnInit() {

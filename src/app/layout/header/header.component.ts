@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService, User } from '../../core/auth.service';
 import { Router } from '@angular/router';
+import { LoginDialogComponent } from '../../shared/components/login-dialog/login-dialog.component';
 
 @Component({
   selector: 'app-header',
@@ -10,11 +12,28 @@ import { Router } from '@angular/router';
 export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
+    });
+  }
+
+  openLoginDialog() {
+    const dialogRef = this.dialog.open(LoginDialogComponent, {
+      width: '500px',
+      maxWidth: '95vw'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        window.location.reload();
+      }
     });
   }
 

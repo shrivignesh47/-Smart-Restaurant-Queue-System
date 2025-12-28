@@ -1,0 +1,134 @@
+<div class="login-container">
+    <div class="login-card">
+        <!-- Left Side - Branding -->
+        <div class="branding-section">
+            <div class="branding-content">
+                <div class="logo-section">
+                    <mat-icon class="logo-icon">restaurant</mat-icon>
+                    <h1 class="brand-name">SysQueue</h1>
+                </div>
+                <h2 class="tagline">Smart Restaurant Queue Management</h2>
+                <p class="description">
+                    Skip the wait, dine smart. Book tables, join queues, and manage reservations effortlessly.
+                </p>
+
+                <div class="features-list">
+                    <div class="feature-item">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Real-time table availability</span>
+                    </div>
+                    <div class="feature-item">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Smart queue management</span>
+                    </div>
+                    <div class="feature-item">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Easy reservations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="form-section">
+            <div class="form-content">
+                <div class="form-header">
+                    <h2>Welcome Back!</h2>
+                    <p>Sign in to continue to SysQueue</p>
+                </div>
+
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+                    <!-- Phone Number Input -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <mat-icon>phone</mat-icon>
+                            Phone Number
+                        </label>
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Enter your phone number</mat-label>
+                            <span matPrefix>+91 &nbsp;</span>
+                            <input matInput type="tel" formControlName="phone" placeholder="98765 43210" maxlength="10"
+                                (input)="formatPhoneNumber($event)">
+                            <mat-icon matSuffix>smartphone</mat-icon>
+                            <mat-hint>We'll send you an OTP</mat-hint>
+                            <mat-error *ngIf="loginForm.get('phone')?.hasError('required')">
+                                Phone number is required
+                            </mat-error>
+                            <mat-error *ngIf="loginForm.get('phone')?.hasError('pattern')">
+                                Please enter a valid 10-digit phone number
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <!-- OTP Input (shown after phone number submitted) -->
+                    <div class="form-group" *ngIf="otpSent">
+                        <label class="form-label">
+                            <mat-icon>lock</mat-icon>
+                            Enter OTP
+                        </label>
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>6-digit OTP</mat-label>
+                            <input matInput type="text" formControlName="otp" placeholder="000000" maxlength="6">
+                            <mat-icon matSuffix>verified_user</mat-icon>
+                            <mat-hint>OTP sent to +91 {{ loginForm.get('phone')?.value }}</mat-hint>
+                            <mat-error *ngIf="loginForm.get('otp')?.hasError('required')">
+                                OTP is required
+                            </mat-error>
+                            <mat-error *ngIf="loginForm.get('otp')?.hasError('pattern')">
+                                Please enter a valid 6-digit OTP
+                            </mat-error>
+                        </mat-form-field>
+
+                        <div class="otp-actions">
+                            <button type="button" mat-button color="primary" [disabled]="resendTimer > 0"
+                                (click)="resendOTP()">
+                                {{ resendTimer > 0 ? 'Resend in ' + resendTimer + 's' : 'Resend OTP' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="form-group" *ngIf="!otpSent">
+                        <mat-checkbox formControlName="rememberMe" color="primary">
+                            Remember this device
+                        </mat-checkbox>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button mat-raised-button color="primary" type="submit" class="submit-btn"
+                        [disabled]="loginForm.invalid || isLoading">
+                        <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+                        <span *ngIf="!isLoading">{{ otpSent ? 'Verify & Login' : 'Send OTP' }}</span>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="divider">
+                        <span>or continue with</span>
+                    </div>
+
+                    <!-- Social Login -->
+                    <div class="social-login">
+                        <button mat-stroked-button type="button" class="social-btn google-btn">
+                            <img src="https://www.google.com/favicon.ico" alt="Google" class="social-icon">
+                            Google
+                        </button>
+                        <button mat-stroked-button type="button" class="social-btn">
+                            <mat-icon>email</mat-icon>
+                            Email
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Footer -->
+                <div class="form-footer">
+                    <p>Don't have an account? <a routerLink="/signup" class="link">Sign up</a></p>
+                    <p class="terms">
+                        By continuing, you agree to our
+                        <a href="#" class="link">Terms of Service</a> and
+                        <a href="#" class="link">Privacy Policy</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

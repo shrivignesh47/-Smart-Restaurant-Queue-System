@@ -28,17 +28,21 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'profile',
+    loadChildren: () => import('./features/profile/profile.module').then(m => m.ProfileModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'restaurants',
+    loadChildren: () => import('./features/restaurants/restaurants.module').then(m => m.RestaurantsModule)
+  },
+  {
     path: 'restaurants/tables',
     redirectTo: 'tables',
     pathMatch: 'full'
   },
   {
     path: 'restaurants',
-    redirectTo: '',
-    pathMatch: 'full'
-  },
-  {
-    path: 'login',
     redirectTo: '',
     pathMatch: 'full'
   },

@@ -1,0 +1,291 @@
+.restaurants-container {
+    min-height: 100vh;
+    background: #f7fafc;
+}
+
+.restaurants-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #5a1a3a 100%);
+    color: white;
+    padding: 60px 0 40px;
+    text-align: center;
+}
+
+.header-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 12px;
+}
+
+.header-content p {
+    font-size: 1.1rem;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.search-section {
+    background: white;
+    padding: 32px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.search-field {
+    width: 100%;
+    max-width: 600px;
+    font-size: 1.1rem;
+}
+
+.filter-chips {
+    margin-top: 20px;
+}
+
+.filter-chips mat-chip-listbox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.restaurants-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.results-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+}
+
+.sort-field {
+    width: 200px;
+}
+
+.restaurants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+}
+
+.restaurant-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.restaurant-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.card-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.restaurant-card:hover .card-image img {
+    transform: scale(1.1);
+}
+
+.status-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background: #fc8181;
+    color: white;
+}
+
+.status-badge.open {
+    background: #48bb78;
+}
+
+.favorite-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.favorite-btn mat-icon {
+    color: #718096;
+    transition: color 0.2s;
+}
+
+.favorite-btn mat-icon.favorited {
+    color: #f56565;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.card-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: #2d3748;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef3c7;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.rating mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #f59e0b;
+}
+
+.rating span {
+    font-weight: 600;
+    color: #92400e;
+}
+
+.cuisine-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.cuisine-tags mat-chip {
+    font-size: 0.85rem;
+}
+
+.restaurant-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+.info-item mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.availability-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.availability-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.availability-item mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.card-actions button {
+    flex: 1;
+    font-weight: 600;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #718096;
+}
+
+.empty-state mat-icon {
+    font-size: 80px;
+    width: 80px;
+    height: 80px;
+    color: #cbd5e0;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+}
+
+.empty-state p {
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .header-content h1 {
+        font-size: 2rem;
+    }
+
+    .restaurants-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .sort-field {
+        width: 100%;
+    }
+
+    .card-actions {
+        flex-direction: column;
+    }
+}

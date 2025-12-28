@@ -40,27 +40,28 @@
                     </div>
                 </mat-card-content>
                 <mat-card-actions>
-                    <button mat-stroked-button color="primary" class="w-full" [routerLink]="['/', rest.name]">View Restaurant</button>
+                    <button mat-stroked-button color="primary" class="w-full" [routerLink]="['/', rest.name]">View
+                        Restaurant</button>
                 </mat-card-actions>
             </mat-card>
         </div>
     </div>
 </section>
 
-<!-- How It Works Section -->
-<section class="section how-it-works-section" style="background-color: #f9f9f9;">
+<!-- Customer Features Section -->
+<section class="section customer-features-section" style="background-color: #f9f9f9;">
     <div class="container">
         <div class="section-header text-center">
-            <h2>How It Works</h2>
-            <p class="subtitle">Simple steps to your perfect meal</p>
+            <h2>Customer Features</h2>
+            <p class="subtitle">Everything you need for a seamless dining experience</p>
         </div>
         <div class="how-it-works-grid">
-            <div class="step-card" *ngFor="let step of howItWorks">
+            <div class="step-card" *ngFor="let feature of customerFeatures">
                 <div class="icon-circle mb-3">
-                    <mat-icon>{{ step.icon }}</mat-icon>
+                    <mat-icon>{{ feature.icon }}</mat-icon>
                 </div>
-                <h3>{{ step.title }}</h3>
-                <p>{{ step.desc }}</p>
+                <h3>{{ feature.title }}</h3>
+                <p>{{ feature.desc }}</p>
             </div>
         </div>
     </div>
@@ -71,15 +72,20 @@
     <div class="container">
         <div class="about-content-wrapper">
             <div class="about-image flex-1">
-                <img src="assets/images/hero2.png" alt="About Us" style="width: 100%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+                <img src="assets/images/hero2.png" alt="About Us"
+                    style="width: 100%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
             </div>
             <div class="about-text flex-1">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--primary-color); margin-bottom: 24px;">About Smart Queue</h2>
+                <h2
+                    style="font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--primary-color); margin-bottom: 24px;">
+                    About Smart Queue</h2>
                 <p style="font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 24px;">
-                    We are revolutionizing the dining experience by bridging the gap between hungry customers and bustling restaurants. Our platform empowers you to make smarter dining decisions.
+                    We are revolutionizing the dining experience by bridging the gap between hungry customers and
+                    bustling restaurants. Our platform empowers you to make smarter dining decisions.
                 </p>
                 <p style="font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 32px;">
-                    Founded with a mission to eliminate waiting times, we provide real-time updates and seamless booking experiences.
+                    Founded with a mission to eliminate waiting times, we provide real-time updates and seamless booking
+                    experiences.
                 </p>
                 <button mat-raised-button color="primary" class="large-btn">Read Our Story</button>
             </div>
@@ -114,10 +120,13 @@
             <h2>What People Say</h2>
         </div>
         <div class="testimonial-grid">
-            <div class="testimonial-card" *ngFor="let t of testimonials" style="background: white; padding: 32px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <div class="testimonial-card" *ngFor="let t of testimonials"
+                style="background: white; padding: 32px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
                 <p style="font-style: italic; font-size: 1.1rem; margin-bottom: 24px;">"{{ t.comment }}"</p>
                 <div class="flex items-center">
-                    <img [src]="t.avatar" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 16px;" alt="Avatar">
+                    <img [src]="t.avatar"
+                        style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 16px;"
+                        alt="Avatar">
                     <div>
                         <h4 style="margin: 0; font-weight: bold;">{{ t.name }}</h4>
                         <span style="font-size: 0.9rem; color: #777;">{{ t.role }}</span>
@@ -129,12 +138,15 @@
 </section>
 
 <!-- Newsletter Section -->
-<section class="section newsletter-section" style="background-color: var(--primary-color); color: white; text-align: center;">
+<section class="section newsletter-section"
+    style="background-color: var(--primary-color); color: white; text-align: center;">
     <div class="container">
         <h2 style="color: white; margin-bottom: 16px;">Stay Updated</h2>
-        <p style="color: rgba(255,255,255,0.8); margin-bottom: 32px;">Subscribe to our newsletter for the latest restaurant news and offers.</p>
+        <p style="color: rgba(255,255,255,0.8); margin-bottom: 32px;">Subscribe to our newsletter for the latest
+            restaurant news and offers.</p>
         <div style="max-width: 500px; margin: 0 auto; display: flex; gap: 10px;">
-            <input type="email" placeholder="Enter your email" style="flex: 1; padding: 12px 20px; border-radius: 50px; border: none; outline: none;">
+            <input type="email" placeholder="Enter your email"
+                style="flex: 1; padding: 12px 20px; border-radius: 50px; border: none; outline: none;">
             <button mat-raised-button color="accent" style="border-radius: 50px;">Subscribe</button>
         </div>
     </div>

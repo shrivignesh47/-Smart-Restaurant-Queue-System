@@ -1,0 +1,233 @@
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="header-content">
+            <button mat-icon-button routerLink="/" class="back-btn">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <h1>My Profile</h1>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <!-- Profile Picture Section -->
+        <div class="profile-picture-section">
+            <div class="avatar-container">
+                <img [src]="profileForm.get('avatar')?.value || 'assets/images/default-avatar.png'"
+                    alt="Profile Picture" class="profile-avatar">
+                <button mat-mini-fab color="primary" class="edit-avatar-btn" (click)="fileInput.click()">
+                    <mat-icon>camera_alt</mat-icon>
+                </button>
+                <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" hidden>
+            </div>
+            <h2>{{ profileForm.get('name')?.value || 'Guest User' }}</h2>
+            <p class="user-phone">{{ profileForm.get('phone')?.value || 'No phone number' }}</p>
+        </div>
+
+        <!-- Profile Form -->
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+            <mat-card class="form-card">
+                <mat-card-header>
+                    <mat-card-title>Personal Information</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Full Name</mat-label>
+                            <input matInput formControlName="name" placeholder="Enter your full name">
+                            <mat-icon matSuffix>person</mat-icon>
+                            <mat-error *ngIf="profileForm.get('name')?.hasError('required')">Name is
+                                required</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Email Address</mat-label>
+                            <input matInput type="email" formControlName="email" placeholder="your.email@example.com">
+                            <mat-icon matSuffix>email</mat-icon>
+                            <mat-error *ngIf="profileForm.get('email')?.hasError('email')">Invalid email
+                                format</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Phone Number</mat-label>
+                            <span matPrefix>+91 &nbsp;</span>
+                            <input matInput type="tel" formControlName="phone" placeholder="98765 43210" maxlength="10">
+                            <mat-icon matSuffix>phone</mat-icon>
+                            <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">Invalid phone
+                                number</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Date of Birth</mat-label>
+                            <input matInput [matDatepicker]="picker" formControlName="dateOfBirth"
+                                placeholder="Select date">
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Gender</mat-label>
+                            <mat-select formControlName="gender">
+                                <mat-option value="male">Male</mat-option>
+                                <mat-option value="female">Female</mat-option>
+                                <mat-option value="other">Other</mat-option>
+                                <mat-option value="prefer-not-to-say">Prefer not to say</mat-option>
+                            </mat-select>
+                            <mat-icon matSuffix>wc</mat-icon>
+                        </mat-form-field>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="form-card">
+                <mat-card-header>
+                    <mat-card-title>Address Information</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Street Address</mat-label>
+                            <textarea matInput formControlName="address" rows="2"
+                                placeholder="Enter your street address"></textarea>
+                            <mat-icon matSuffix>home</mat-icon>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row two-columns">
+                        <mat-form-field appearance="outline">
+                            <mat-label>City</mat-label>
+                            <input matInput formControlName="city" placeholder="City">
+                            <mat-icon matSuffix>location_city</mat-icon>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>State</mat-label>
+                            <input matInput formControlName="state" placeholder="State">
+                            <mat-icon matSuffix>map</mat-icon>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row two-columns">
+                        <mat-form-field appearance="outline">
+                            <mat-label>PIN Code</mat-label>
+                            <input matInput formControlName="pincode" placeholder="000000" maxlength="6">
+                            <mat-icon matSuffix>pin_drop</mat-icon>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Country</mat-label>
+                            <input matInput formControlName="country" placeholder="India">
+                            <mat-icon matSuffix>public</mat-icon>
+                        </mat-form-field>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="form-card">
+                <mat-card-header>
+                    <mat-card-title>Preferences</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Dietary Preferences</mat-label>
+                            <mat-select formControlName="dietaryPreferences" multiple>
+                                <mat-option value="vegetarian">Vegetarian</mat-option>
+                                <mat-option value="vegan">Vegan</mat-option>
+                                <mat-option value="non-vegetarian">Non-Vegetarian</mat-option>
+                                <mat-option value="gluten-free">Gluten-Free</mat-option>
+                                <mat-option value="dairy-free">Dairy-Free</mat-option>
+                                <mat-option value="halal">Halal</mat-option>
+                                <mat-option value="kosher">Kosher</mat-option>
+                            </mat-select>
+                            <mat-icon matSuffix>restaurant_menu</mat-icon>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Food Allergies</mat-label>
+                            <textarea matInput formControlName="allergies" rows="2"
+                                placeholder="List any food allergies"></textarea>
+                            <mat-icon matSuffix>warning</mat-icon>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-slide-toggle formControlName="emailNotifications" color="primary">
+                            Email Notifications
+                        </mat-slide-toggle>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-slide-toggle formControlName="smsNotifications" color="primary">
+                            SMS Notifications
+                        </mat-slide-toggle>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button mat-raised-button type="button" (click)="cancelEdit()">
+                    Cancel
+                </button>
+                <button mat-raised-button color="primary" type="submit" [disabled]="profileForm.invalid || isSaving">
+                    <mat-spinner *ngIf="isSaving" diameter="20"></mat-spinner>
+                    <span *ngIf="!isSaving">Save Profile</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Account Statistics -->
+        <div class="stats-section">
+            <h3>Account Statistics</h3>
+            <div class="stats-grid">
+                <mat-card class="stat-card">
+                    <mat-icon>event_available</mat-icon>
+                    <div class="stat-value">{{ stats.totalBookings }}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </mat-card>
+
+                <mat-card class="stat-card">
+                    <mat-icon>queue</mat-icon>
+                    <div class="stat-value">{{ stats.queueVisits }}</div>
+                    <div class="stat-label">Queue Visits</div>
+                </mat-card>
+
+                <mat-card class="stat-card">
+                    <mat-icon>calendar_today</mat-icon>
+                    <div class="stat-value">{{ stats.reservations }}</div>
+                    <div class="stat-label">Reservations</div>
+                </mat-card>
+
+                <mat-card class="stat-card">
+                    <mat-icon>restaurant</mat-icon>
+                    <div class="stat-value">{{ stats.favoriteRestaurants }}</div>
+                    <div class="stat-label">Favorite Places</div>
+                </mat-card>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <mat-card class="danger-zone">
+            <mat-card-header>
+                <mat-card-title>Danger Zone</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p>Once you delete your account, there is no going back. Please be certain.</p>
+                <button mat-stroked-button color="warn" (click)="deleteAccount()">
+                    <mat-icon>delete_forever</mat-icon>
+                    Delete Account
+                </button>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

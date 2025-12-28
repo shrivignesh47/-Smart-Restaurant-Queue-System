@@ -5,7 +5,8 @@
         <div class="container hero-content">
             <span class="status-badge" [class.open]="restaurant.status === 'Open'">{{ restaurant.status }}</span>
             <h1>{{ restaurant.name }}</h1>
-            <p class="cuisine">{{ restaurant.cuisine }} • <mat-icon class="star">star</mat-icon> {{ restaurant.rating }}</p>
+            <p class="cuisine">{{ restaurant.cuisine }} • <mat-icon class="star">star</mat-icon> {{ restaurant.rating }}
+            </p>
             <p class="address"><mat-icon>location_on</mat-icon> {{ restaurant.address }}</p>
         </div>
     </div>
@@ -30,7 +31,7 @@
                             <p>{{ restaurant.description }}</p>
                         </div>
                     </div>
-                    
+
                     <div class="tags">
                         <span class="tag" *ngFor="let tag of restaurant.tags">{{ tag }}</span>
                     </div>
@@ -41,14 +42,12 @@
         <!-- Main Content Area -->
         <main class="main-area">
             <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="primary" backgroundColor="primary">
-                <a mat-tab-link *ngFor="let link of navLinks"
-                   [routerLink]="link.path"
-                   routerLinkActive #rla="routerLinkActive"
-                   [active]="rla.isActive">
-                   <mat-icon class="mr-2">{{ link.icon }}</mat-icon> {{ link.label }}
+                <a mat-tab-link *ngFor="let link of visibleNavLinks" [routerLink]="link.path" routerLinkActive
+                    #rla="routerLinkActive" [active]="rla.isActive">
+                    <mat-icon class="mr-2">{{ link.icon }}</mat-icon> {{ link.label }}
                 </a>
             </nav>
-            
+
             <div class="tab-content">
                 <mat-tab-nav-panel #tabPanel>
                     <router-outlet></router-outlet>
