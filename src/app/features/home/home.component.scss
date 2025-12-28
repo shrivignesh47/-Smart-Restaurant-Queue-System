@@ -116,6 +116,10 @@
             }
         }
     }
+    
+    .about-content-wrapper {
+        flex-direction: column;
+    }
 }
 
 // Keep existing restaurant grid styles but update them to match
@@ -133,6 +137,12 @@
             font-family: 'Playfair Display', serif;
             margin: 0;
         }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 10px;
+        }
     }
 }
 
@@ -140,6 +150,46 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 32px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 32px;
+    
+    .feature-card {
+        text-align: center;
+        padding: 24px;
+        
+        .icon-square {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            
+            mat-icon {
+                font-size: 32px;
+                width: 32px;
+                height: 32px;
+            }
+        }
+        
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+    }
 }
 
 .restaurant-card {
@@ -199,129 +249,71 @@
     }
 }
 
-.features-section {
-    background: #fff9f6; // Very light warm bg
-    padding: 100px 0;
-
-    .section-header {
-        text-align: center;
-        margin-bottom: 60px;
-
-        h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            color: #3e2723;
-            margin-bottom: 16px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            color: #795548;
-        }
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 32px;
-    }
-
-    .feature-card {
-        background: white;
-        padding: 40px 32px;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        border: 1px solid rgba(0, 0, 0, 0.02);
-        transition: transform 0.3s ease;
-
-        &:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
-        }
-
-        .icon-square {
-            width: 56px;
-            height: 56px;
-            background: #5d1c33; // Dark Maroon
-            color: white;
-            border-radius: 12px;
+// New Grids
+.how-it-works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+    text-align: center;
+    
+    .step-card {
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(88, 33, 49, 0.05); // Light primary
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
-
+            margin: 0 auto 24px;
+            
             mat-icon {
-                font-size: 28px;
-                width: 28px;
-                height: 28px;
+                font-size: 40px;
+                width: 40px;
+                height: 40px;
+                color: var(--primary-color);
             }
         }
-
+        
         h3 {
-            font-family: 'Playfair Display', serif;
             font-size: 1.25rem;
             font-weight: 700;
-            margin: 0 0 12px;
-            color: #3e2723;
-        }
-
-        p {
-            color: #666;
-            margin: 0;
-            line-height: 1.6;
-            font-size: 0.95rem;
+            margin-bottom: 12px;
         }
     }
 }
 
-.transform-section {
-    background: #fdfbf7; // Beige
-    padding: 100px 0;
+.testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+}
 
-    .icon-square.large {
-        width: 80px;
-        height: 80px;
-        background: #5d1c33;
-        color: white;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 32px;
-
-        mat-icon {
-            font-size: 40px;
-            width: 40px;
-            height: 40px;
-        }
+.about-content-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 64px;
+    
+    .flex-1 {
+        flex: 1;
     }
+}
 
+.partner-card {
+    background-color: #f5f5f5;
+    padding: 64px;
+    border-radius: 32px;
+    text-align: center;
+    
     h2 {
-        font-family: 'Playfair Display', serif;
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
-        margin-bottom: 24px;
-        color: #3e2723;
+        margin-bottom: 16px;
     }
-
+    
     p {
-        max-width: 600px;
-        margin: 0 auto;
-        font-size: 1.1rem;
-        color: #5d4037;
-        line-height: 1.6;
-    }
-}
-
-.partner-section {
-    .partner-card {
-        background: var(--primary-color);
-        background-image: radial-gradient(#6d213c 1px, transparent 1px);
-        background-size: 20px 20px;
-
-        button {
-            color: var(--primary-color);
-        }
+        margin-bottom: 32px;
+        font-size: 1.2rem;
+        color: #666;
     }
 }

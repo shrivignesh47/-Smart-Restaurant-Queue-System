@@ -29,9 +29,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
-  currentSlide = 0;
-  slideInterval: any;
-
   restaurants = [
     {
       name: 'The Gourmet Kitchen',
@@ -74,19 +71,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     { icon: 'dashboard', title: 'Manager Dashboard', desc: 'Complete control over tables, queue, and reservations' }
   ];
 
+  testimonials = [
+    { name: 'Sarah J.', role: 'Restaurant Manager', comment: 'This system transformed how we handle our weekend rush. No more angry customers waiting in line!', avatar: 'assets/images/hero1.png' },
+    { name: 'Mike T.', role: 'Food Blogger', comment: 'I love being able to see the wait time before I even leave my house. A game changer.', avatar: 'assets/images/hero2.png' },
+    { name: 'Emily R.', role: 'Daily Customer', comment: 'Booking a table has never been easier. Highly recommended!', avatar: 'assets/images/hero1.png' }
+  ];
+
+  howItWorks = [
+    { step: 1, title: 'Find Restaurant', desc: 'Browse top-rated restaurants near you.', icon: 'search' },
+    { step: 2, title: 'Check Status', desc: 'View real-time queue status and wait times.', icon: 'visibility' },
+    { step: 3, title: 'Join Queue', desc: 'Join the queue remotely or book a table.', icon: 'queue' },
+    { step: 4, title: 'Enjoy', desc: 'Arrive just in time for your table.', icon: 'restaurant' }
+  ];
+
   ngOnInit() {
-    this.startSlider();
   }
 
   ngOnDestroy() {
-    if (this.slideInterval) {
-      clearInterval(this.slideInterval);
-    }
-  }
-
-  startSlider() {
-    this.slideInterval = setInterval(() => {
-      this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
-    }, 5000);
   }
 }

@@ -36,10 +36,10 @@
 
         <div class="dots">
             <span *ngFor="let s of slides; let i = index" [class.active]="i === currentSlide"
-                (click)="currentSlide = i"></span>
+                (click)="setSlide(i)"></span>
         </div>
 
-        <button mat-icon-button (click)="nextSlide()">
+        <button mat-icon-button (click)="nextSlide(); resetAutoSlide()">
             <mat-icon>chevron_right</mat-icon>
         </button>
     </div>
