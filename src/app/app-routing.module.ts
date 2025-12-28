@@ -5,8 +5,7 @@ import { AuthGuard } from './core/auth.guard';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: '/tables',
-    pathMatch: 'full'
+    loadChildren: () => import('./features/home/home.module').then(m => m.HomeModule)
   },
   {
     path: 'tables',
@@ -29,8 +28,35 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'profile',
+    loadChildren: () => import('./features/profile/profile.module').then(m => m.ProfileModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'restaurants',
+    loadChildren: () => import('./features/restaurants/restaurants.module').then(m => m.RestaurantsModule)
+  },
+  {
+    path: 'restaurants/tables',
+    redirectTo: 'tables',
+    pathMatch: 'full'
+  },
+  {
+    path: 'sysqueue/admin',
+    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
+  },
+  {
+    path: 'restaurants',
+    redirectTo: '',
+    pathMatch: 'full'
+  },
+  {
+    path: ':restaurantName',
+    loadChildren: () => import('./features/restaurant/restaurant.module').then(m => m.RestaurantModule)
+  },
+  {
     path: '**',
-    redirectTo: '/tables'
+    redirectTo: ''
   }
 ];
 

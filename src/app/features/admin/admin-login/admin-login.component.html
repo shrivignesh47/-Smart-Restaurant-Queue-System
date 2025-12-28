@@ -1,0 +1,50 @@
+<div class="admin-login-container">
+    <div class="login-card">
+        <div class="card-header">
+            <mat-icon class="admin-icon">admin_panel_settings</mat-icon>
+            <h1>SysQueue Admin</h1>
+            <p>System Administration Portal</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Username</mat-label>
+                <input matInput formControlName="username" placeholder="Enter admin username">
+                <mat-icon matSuffix>person</mat-icon>
+                <mat-error *ngIf="loginForm.get('username')?.hasError('required')">Username is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Password</mat-label>
+                <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+                    placeholder="Enter password">
+                <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+                    <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                </button>
+                <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
+            </mat-form-field>
+
+            <div class="demo-credentials">
+                <mat-icon>info</mat-icon>
+                <div>
+                    <strong>Demo Credentials:</strong><br>
+                    Username: <code>admin</code><br>
+                    Password: <code>admin</code>
+                </div>
+            </div>
+
+            <button mat-raised-button color="primary" type="submit" class="login-btn"
+                [disabled]="loginForm.invalid || isLoading">
+                <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+                <span *ngIf="!isLoading">Login to Dashboard</span>
+            </button>
+        </form>
+
+        <div class="footer-links">
+            <a routerLink="/" mat-button>
+                <mat-icon>arrow_back</mat-icon>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</div>

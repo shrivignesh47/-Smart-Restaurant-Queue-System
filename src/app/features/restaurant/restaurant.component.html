@@ -1,0 +1,58 @@
+<div class="restaurant-page">
+    <!-- Header/Hero -->
+    <div class="restaurant-hero" [style.backgroundImage]="'url(' + restaurant.image + ')'">
+        <div class="overlay"></div>
+        <div class="container hero-content">
+            <span class="status-badge" [class.open]="restaurant.status === 'Open'">{{ restaurant.status }}</span>
+            <h1>{{ restaurant.name }}</h1>
+            <p class="cuisine">{{ restaurant.cuisine }} • <mat-icon class="star">star</mat-icon> {{ restaurant.rating }}
+            </p>
+            <p class="address"><mat-icon>location_on</mat-icon> {{ restaurant.address }}</p>
+        </div>
+    </div>
+
+    <div class="container content-wrapper">
+        <!-- Sidebar Info -->
+        <aside class="sidebar">
+            <mat-card class="info-card">
+                <mat-card-content>
+                    <h3>Information</h3>
+                    <div class="info-item">
+                        <mat-icon>schedule</mat-icon>
+                        <div>
+                            <strong>Hours</strong>
+                            <p>{{ restaurant.hours }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <mat-icon>description</mat-icon>
+                        <div>
+                            <strong>About</strong>
+                            <p>{{ restaurant.description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="tags">
+                        <span class="tag" *ngFor="let tag of restaurant.tags">{{ tag }}</span>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-area">
+            <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="primary" backgroundColor="primary">
+                <a mat-tab-link *ngFor="let link of visibleNavLinks" [routerLink]="link.path" routerLinkActive
+                    #rla="routerLinkActive" [active]="rla.isActive">
+                    <mat-icon class="mr-2">{{ link.icon }}</mat-icon> {{ link.label }}
+                </a>
+            </nav>
+
+            <div class="tab-content">
+                <mat-tab-nav-panel #tabPanel>
+                    <router-outlet></router-outlet>
+                </mat-tab-nav-panel>
+            </div>
+        </main>
+    </div>
+</div>

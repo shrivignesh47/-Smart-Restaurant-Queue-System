@@ -1,0 +1,329 @@
+<div class="restaurant-dashboard">
+    <mat-sidenav-container class="dashboard-container">
+        <mat-sidenav mode="side" opened class="sidebar">
+            <div class="sidebar-header">
+                <mat-icon>restaurant_menu</mat-icon>
+                <h2>{{ restaurantName }}</h2>
+                <p>Manager Dashboard</p>
+            </div>
+
+            <mat-nav-list>
+                <a mat-list-item [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
+                    <mat-icon>dashboard</mat-icon>
+                    <span>Overview</span>
+                </a>
+                <a mat-list-item [class.active]="activeTab === 'queue'" (click)="activeTab = 'queue'">
+                    <mat-icon>people_outline</mat-icon>
+                    <span>Queue Management</span>
+                    <span class="badge">{{ queueList.length }}</span>
+                </a>
+                <a mat-list-item [class.active]="activeTab === 'tables'" (click)="activeTab = 'tables'">
+                    <mat-icon>event_seat</mat-icon>
+                    <span>Table Management</span>
+                </a>
+                <a mat-list-item [class.active]="activeTab === 'reservations'" (click)="activeTab = 'reservations'">
+                    <mat-icon>event_available</mat-icon>
+                    <span>Reservations</span>
+                    <span class="badge">{{ reservations.length }}</span>
+                </a>
+                <a mat-list-item [class.active]="activeTab === 'analytics'" (click)="activeTab = 'analytics'">
+                    <mat-icon>analytics</mat-icon>
+                    <span>Analytics</span>
+                </a>
+                <a mat-list-item [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'">
+                    <mat-icon>settings</mat-icon>
+                    <span>Settings</span>
+                </a>
+                <mat-divider></mat-divider>
+                <a mat-list-item (click)="logout()">
+                    <mat-icon>logout</mat-icon>
+                    <span>Logout</span>
+                </a>
+            </mat-nav-list>
+        </mat-sidenav>
+
+        <mat-sidenav-content class="main-content">
+            <div class="dashboard-header">
+                <div>
+                    <h1>{{ getTabTitle() }}</h1>
+                    <div class="status-toggle">
+                        <span>Restaurant Status:</span>
+                        <mat-slide-toggle [(ngModel)]="restaurantOnline" (change)="toggleRestaurantStatus()"
+                            color="primary">
+                            {{ restaurantOnline ? 'ONLINE' : 'OFFLINE' }}
+                        </mat-slide-toggle>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <span class="manager-name">Manager</span>
+                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                        <mat-icon>account_circle</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                        <button mat-menu-item (click)="logout()">
+                            <mat-icon>logout</mat-icon>
+                            <span>Logout</span>
+                        </button>
+                    </mat-menu>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'overview'" class="tab-content">
+                <div class="stats-grid">
+                    <mat-card class="stat-card">
+                        <mat-icon class="stat-icon">people</mat-icon>
+                        <div class="stat-value">{{ queueList.length }}</div>
+                        <div class="stat-label">In Queue</div>
+                    </mat-card>
+
+                    <mat-card class="stat-card">
+                        <mat-icon class="stat-icon">event_seat</mat-icon>
+                        <div class="stat-value">{{ getOccupiedTables() }}/{{ tables.length }}</div>
+                        <div class="stat-label">Tables Occupied</div>
+                    </mat-card>
+
+                    <mat-card class="stat-card">
+                        <mat-icon class="stat-icon">event_available</mat-icon>
+                        <div class="stat-value">{{ reservations.length }}</div>
+                        <div class="stat-label">Today's Reservations</div>
+                    </mat-card>
+
+                    <mat-card class="stat-card">
+                        <mat-icon class="stat-icon">trending_up</mat-icon>
+                        <div class="stat-value">{{ todayRevenue | currency:'INR':'symbol':'1.0-0' }}</div>
+                        <div class="stat-label">Today's Revenue</div>
+                    </mat-card>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="action-buttons">
+                        <button mat-raised-button color="primary" (click)="activeTab = 'queue'">
+                            <mat-icon>people</mat-icon>
+                            Manage Queue
+                        </button>
+                        <button mat-raised-button color="primary" (click)="activeTab = 'tables'">
+                            <mat-icon>event_seat</mat-icon>
+                            Manage Tables
+                        </button>
+                        <button mat-raised-button color="primary" (click)="activeTab = 'reservations'">
+                            <mat-icon>event_available</mat-icon>
+                            View Reservations
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'queue'" class="tab-content">
+                <mat-card>
+                    <mat-card-header>
+                        <mat-card-title>Queue Management</mat-card-title>
+                        <div class="card-actions">
+                            <span class="queue-count">{{ queueList.length }} customers waiting</span>
+                        </div>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div *ngIf="queueList.length === 0" class="empty-state">
+                            <mat-icon>people_outline</mat-icon>
+                            <p>No customers in queue</p>
+                        </div>
+
+                        <div *ngIf="queueList.length > 0" class="queue-list">
+                            <mat-card *ngFor="let customer of queueList; let i = index" class="queue-item">
+                                <div class="queue-info">
+                                    <div class="position-badge">#{{ i + 1 }}</div>
+                                    <div class="customer-details">
+                                        <h4>{{ customer.name }}</h4>
+                                        <p>Party Size: {{ customer.partySize }} | Wait: {{ customer.waitTime }} mins</p>
+                                        <p class="phone">{{ customer.phone }}</p>
+                                    </div>
+                                </div>
+                                <div class="queue-actions">
+                                    <button mat-raised-button color="primary" (click)="seatCustomer(customer)">
+                                        <mat-icon>event_seat</mat-icon>
+                                        Seat Customer
+                                    </button>
+                                    <button mat-icon-button color="warn" (click)="removeFromQueue(customer)">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                            </mat-card>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <div *ngIf="activeTab === 'tables'" class="tab-content">
+                <mat-card>
+                    <mat-card-header>
+                        <mat-card-title>Table Management</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="tables-grid">
+                            <mat-card *ngFor="let table of tables" class="table-card"
+                                [class.available]="table.status === 'available'"
+                                [class.occupied]="table.status === 'occupied'"
+                                [class.reserved]="table.status === 'reserved'">
+                                <div class="table-header">
+                                    <h3>Table {{ table.number }}</h3>
+                                    <mat-chip [class]="table.status">{{ table.status }}</mat-chip>
+                                </div>
+                                <div class="table-info">
+                                    <p><mat-icon>people</mat-icon> Capacity: {{ table.capacity }}</p>
+                                    <p *ngIf="table.currentGuest"><mat-icon>person</mat-icon> {{ table.currentGuest }}
+                                    </p>
+                                    <p *ngIf="table.occupiedSince"><mat-icon>access_time</mat-icon> Since: {{
+                                        table.occupiedSince | date:'shortTime' }}</p>
+                                </div>
+                                <div class="table-actions">
+                                    <button *ngIf="table.status === 'available'" mat-raised-button color="primary"
+                                        (click)="markOccupied(table)">
+                                        Mark Occupied
+                                    </button>
+                                    <button *ngIf="table.status === 'occupied'" mat-raised-button color="accent"
+                                        (click)="vacateTable(table)">
+                                        Vacate Table
+                                    </button>
+                                    <button *ngIf="table.status === 'reserved'" mat-stroked-button
+                                        (click)="viewReservation(table)">
+                                        View Reservation
+                                    </button>
+                                </div>
+                            </mat-card>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <div *ngIf="activeTab === 'reservations'" class="tab-content">
+                <mat-card>
+                    <mat-card-header>
+                        <mat-card-title>Reservations Management</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <table mat-table [dataSource]="reservations" class="reservations-table">
+                            <ng-container matColumnDef="time">
+                                <th mat-header-cell *matHeaderCellDef>Time</th>
+                                <td mat-cell *matCellDef="let reservation">{{ reservation.time }}</td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef>Customer</th>
+                                <td mat-cell *matCellDef="let reservation">{{ reservation.customerName }}</td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="guests">
+                                <th mat-header-cell *matHeaderCellDef>Guests</th>
+                                <td mat-cell *matCellDef="let reservation">{{ reservation.guests }}</td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="table">
+                                <th mat-header-cell *matHeaderCellDef>Table</th>
+                                <td mat-cell *matCellDef="let reservation">{{ reservation.tableNumber }}</td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef>Status</th>
+                                <td mat-cell *matCellDef="let reservation">
+                                    <mat-chip [class]="reservation.status">{{ reservation.status }}</mat-chip>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                                <td mat-cell *matCellDef="let reservation">
+                                    <button mat-icon-button [matMenuTriggerFor]="resMenu">
+                                        <mat-icon>more_vert</mat-icon>
+                                    </button>
+                                    <mat-menu #resMenu="matMenu">
+                                        <button mat-menu-item (click)="editReservation(reservation)">
+                                            <mat-icon>edit</mat-icon>
+                                            <span>Edit</span>
+                                        </button>
+                                        <button mat-menu-item (click)="cancelReservation(reservation)">
+                                            <mat-icon>cancel</mat-icon>
+                                            <span>Cancel</span>
+                                        </button>
+                                    </mat-menu>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="reservationColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: reservationColumns;"></tr>
+                        </table>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <div *ngIf="activeTab === 'analytics'" class="tab-content">
+                <div class="analytics-grid">
+                    <mat-card>
+                        <mat-card-header>
+                            <mat-card-title>Today's Performance</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <div class="metric">
+                                <span>Total Customers Served:</span>
+                                <strong>{{ analytics.customersServed }}</strong>
+                            </div>
+                            <div class="metric">
+                                <span>Average Wait Time:</span>
+                                <strong>{{ analytics.avgWaitTime }} mins</strong>
+                            </div>
+                            <div class="metric">
+                                <span>Table Turnover Rate:</span>
+                                <strong>{{ analytics.turnoverRate }}x</strong>
+                            </div>
+                            <div class="metric">
+                                <span>Revenue:</span>
+                                <strong>{{ analytics.revenue | currency:'INR' }}</strong>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <mat-card>
+                        <mat-card-header>
+                            <mat-card-title>Peak Hours</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <p class="chart-placeholder">📊 Peak hours: 7 PM - 9 PM</p>
+                        </mat-card-content>
+                    </mat-card>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'settings'" class="tab-content">
+                <mat-card>
+                    <mat-card-header>
+                        <mat-card-title>Restaurant Settings</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <h3>Operating Hours</h3>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Opening Time</mat-label>
+                            <input matInput type="time" [(ngModel)]="settings.openingTime">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Closing Time</mat-label>
+                            <input matInput type="time" [(ngModel)]="settings.closingTime">
+                        </mat-form-field>
+
+                        <h3>Queue Settings</h3>
+                        <mat-slide-toggle [(ngModel)]="settings.acceptQueue" color="primary">
+                            Accept Queue Customers
+                        </mat-slide-toggle>
+                        <br><br>
+                        <mat-slide-toggle [(ngModel)]="settings.acceptReservations" color="primary">
+                            Accept Reservations
+                        </mat-slide-toggle>
+
+                        <br><br>
+                        <button mat-raised-button color="primary" (click)="saveSettings()">
+                            Save Settings
+                        </button>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </mat-sidenav-content>
+    </mat-sidenav-container>
+</div>

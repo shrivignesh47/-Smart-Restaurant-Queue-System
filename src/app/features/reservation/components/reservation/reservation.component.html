@@ -1,0 +1,167 @@
+<div class="reservation-container">
+
+    <!-- My Reservations View -->
+    <div *ngIf="!restaurantId && currentUser; else makeReservation">
+        <h2 class="mb-4 text-2xl font-bold">My Reservations</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="myReservations.length; else noReservations">
+            <mat-card *ngFor="let res of myReservations" class="reservation-card-item">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar class="text-accent">event</mat-icon>
+                    <mat-card-title>{{ res.restaurantId || 'Restaurant' }}</mat-card-title>
+                    <mat-card-subtitle>ID: {{ res.id }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content class="mt-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Name:</span>
+                        <span class="font-bold">{{ res.customerName }}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Date:</span>
+                        <span class="font-bold">{{ res.reservationDate | date:'mediumDate' }}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Time:</span>
+                        <span class="font-bold">{{ res.reservationTime }}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Guests:</span>
+                        <span class="font-bold">{{ res.partySize }} {{ res.partySize === 1 ? 'Person' : 'People'
+                            }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status:</span>
+                        <span [ngClass]="getReservationStatusClass(res.status)" class="px-2 py-0.5 rounded text-sm">
+                            {{ res.status }}
+                        </span>
+                    </div>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                    <button mat-button color="warn" (click)="cancelReservation(res.id)"
+                        *ngIf="res.status !== 'Cancelled'">Cancel</button>
+                </mat-card-actions>
+            </mat-card>
+        </div>
+
+        <ng-template #noReservations>
+            <div class="text-center p-8 bg-gray-50 rounded-lg">
+                <mat-icon class="text-4xl text-gray-400 mb-2">event_busy</mat-icon>
+                <p>You have no upcoming reservations.</p>
+                <button mat-raised-button color="primary" routerLink="/" class="mt-4">Browse Restaurants</button>
+            </div>
+        </ng-template>
+    </div>
+
+    <!-- Make Reservation View -->
+    <ng-template #makeReservation>
+        <div class="reservation-card">
+            <div class="info-banner"
+                style="background: #fff3cd; padding: 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid var(--accent-color);">
+                <h4 style="margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">
+                    <mat-icon style="color: var(--accent-color);">info</mat-icon>
+                    Advance Reservations Only
+                </h4>
+                <p style="margin: 0; color: #666;">
+                    Reservations are for <strong>future dates only</strong> (tomorrow onwards).
+                    For immediate seating, please check <a (click)="navigateToTables()"
+                        style="color: var(--primary-color); cursor: pointer; text-decoration: underline;">Available
+                        Tables</a>
+                    or <a (click)="navigateToQueue()"
+                        style="color: var(--primary-color); cursor: pointer; text-decoration: underline;">Join the
+                        Queue</a>.
+                </p>
+            </div>
+
+            <h3>Book a Table</h3>
+
+            <form [formGroup]="reservationForm" class="reservation-form">
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Your Name</mat-label>
+                        <input matInput formControlName="customerName" placeholder="Enter your name">
+                        <mat-error *ngIf="reservationForm.get('customerName')?.hasError('required')">
+                            Name is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" formControlName="customerEmail" placeholder="your@email.com">
+                        <mat-error *ngIf="reservationForm.get('customerEmail')?.hasError('required')">
+                            Email is required
+                        </mat-error>
+                        <mat-error *ngIf="reservationForm.get('customerEmail')?.hasError('email')">
+                            Please enter a valid email
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Phone</mat-label>
+                        <input matInput type="tel" formControlName="customerPhone" placeholder="(123) 456-7890">
+                        <mat-error *ngIf="reservationForm.get('customerPhone')?.hasError('required')">
+                            Phone is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Reservation Date</mat-label>
+                        <input matInput [matDatepicker]="picker" formControlName="reservationDate" [min]="minDate">
+                        <mat-hint>Select a future date (tomorrow or later)</mat-hint>
+                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                        <mat-error *ngIf="reservationForm.get('reservationDate')?.hasError('required')">
+                            Date is required
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Party Size</mat-label>
+                        <mat-select formControlName="partySize">
+                            <mat-option [value]="1">1 Person</mat-option>
+                            <mat-option [value]="2">2 People</mat-option>
+                            <mat-option [value]="3">3 People</mat-option>
+                            <mat-option [value]="4">4 People</mat-option>
+                            <mat-option [value]="5">5 People</mat-option>
+                            <mat-option [value]="6">6 People</mat-option>
+                            <mat-option [value]="7">7 People</mat-option>
+                            <mat-option [value]="8">8+ People</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div class="time-slots-section">
+                    <h4>Select Time</h4>
+                    <div class="slots-grid">
+                        <div class="time-slot" *ngFor="let time of timeSlots"
+                            [class.selected]="reservationForm.get('reservationTime')?.value === time"
+                            (click)="reservationForm.patchValue({ reservationTime: time })">
+                            {{ time }}
+                        </div>
+                    </div>
+                    <mat-error
+                        *ngIf="reservationForm.get('reservationTime')?.touched && reservationForm.get('reservationTime')?.hasError('required')"
+                        style="display: block; margin-top: 8px;">
+                        Please select a time
+                    </mat-error>
+                </div>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Special Requests (Optional)</mat-label>
+                    <textarea matInput formControlName="specialRequests" rows="3"
+                        placeholder="Any dietary restrictions, seating preferences, etc."></textarea>
+                </mat-form-field>
+
+                <div class="actions mt-4">
+                    <button mat-raised-button color="primary" class="w-full large-btn" type="button"
+                        (click)="submitReservation()" [disabled]="reservationForm.invalid">
+                        <mat-icon>event_available</mat-icon> Confirm Reservation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </ng-template>
+</div>

@@ -1,0 +1,52 @@
+<div class="restaurant-admin-login">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="restaurant-branding">
+                <mat-icon>restaurant_menu</mat-icon>
+                <h1>{{ restaurantName }} Manager</h1>
+                <p>Restaurant Management Portal</p>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="login()">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Manager Username</mat-label>
+                    <input matInput formControlName="username" placeholder="Enter username">
+                    <mat-icon matSuffix>person</mat-icon>
+                    <mat-error *ngIf="loginForm.get('username')?.hasError('required')">Username is required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Password</mat-label>
+                    <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+                        placeholder="Enter password">
+                    <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+                        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
+                </mat-form-field>
+
+                <div class="demo-info">
+                    <mat-icon>info</mat-icon>
+                    <div>
+                        <strong>Demo Login:</strong><br>
+                        Username: <code>manager</code><br>
+                        Password: <code>manager</code>
+                    </div>
+                </div>
+
+                <button mat-raised-button color="primary" type="submit" class="login-btn"
+                    [disabled]="loginForm.invalid || isLoading">
+                    <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+                    <span *ngIf="!isLoading">Login to Dashboard</span>
+                </button>
+            </form>
+
+            <div class="footer-actions">
+                <a [routerLink]="['/' + restaurantName]" mat-button>
+                    <mat-icon>arrow_back</mat-icon>
+                    Back to Restaurant
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

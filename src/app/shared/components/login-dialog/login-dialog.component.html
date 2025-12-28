@@ -1,0 +1,43 @@
+<div class="login-dialog">
+    <button mat-icon-button class="close-btn" (click)="close()">
+        <mat-icon>close</mat-icon>
+    </button>
+
+    <div class="dialog-header">
+        <mat-icon class="logo-icon">restaurant</mat-icon>
+        <h2>Welcome to SysQueue</h2>
+        <p>Sign in to continue</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Phone Number</mat-label>
+            <span matPrefix>+91 &nbsp;</span>
+            <input matInput type="tel" formControlName="phone" placeholder="98765 43210" maxlength="10">
+            <mat-icon matSuffix>phone</mat-icon>
+            <mat-hint>We'll send you an OTP</mat-hint>
+            <mat-error *ngIf="loginForm.get('phone')?.hasError('required')">Phone is required</mat-error>
+            <mat-error *ngIf="loginForm.get('phone')?.hasError('pattern')">Enter valid 10-digit number</mat-error>
+        </mat-form-field>
+
+        <div *ngIf="otpSent" class="otp-section">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Enter OTP</mat-label>
+                <input matInput type="text" formControlName="otp" placeholder="123456" maxlength="6">
+                <mat-icon matSuffix>lock</mat-icon>
+                <mat-hint>Demo OTP: 123456</mat-hint>
+                <mat-error *ngIf="loginForm.get('otp')?.hasError('required')">OTP is required</mat-error>
+            </mat-form-field>
+
+            <button type="button" mat-button color="primary" [disabled]="resendTimer > 0" (click)="resendOTP()">
+                {{ resendTimer > 0 ? 'Resend in ' + resendTimer + 's' : 'Resend OTP' }}
+            </button>
+        </div>
+
+        <button mat-raised-button color="primary" type="submit" class="submit-btn"
+            [disabled]="loginForm.invalid || isLoading">
+            <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+            <span *ngIf="!isLoading">{{ otpSent ? 'Verify & Login' : 'Send OTP' }}</span>
+        </button>
+    </form>
+</div>

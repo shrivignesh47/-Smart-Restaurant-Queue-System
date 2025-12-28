@@ -4,24 +4,162 @@
 // Include the common styles for Angular Material
 @include mat.core();
 
+// Custom Colors - Updated to Blue Theme
+$sysqueue-primary: (
+  50: #e3f2fd,
+  100: #bbdefb,
+  200: #90caf9,
+  300: #64b5f6,
+  400: #42a5f5,
+  500: #234C6A,
+  // Deep Blue
+  600: #1e4159,
+  700: #193648,
+  800: #142b37,
+  900: #0f2026,
+  contrast: (50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #ffffff,
+    A700: #ffffff,
+  )
+);
+
+$sysqueue-accent: (
+  50: #fff8e1,
+  100: #ffecb3,
+  200: #ffe082,
+  300: #ffd54f,
+  400: #ffca28,
+  500: #FFA000,
+  // Gold/Amber
+  600: #ff6f00,
+  700: #e65100,
+  800: #bf360c,
+  900: #3e2723,
+  contrast: (50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #000000,
+    600: #000000,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #000000,
+  )
+);
+
 // Define a custom theme
-$custom-primary: mat.define-palette(mat.$indigo-palette);
-$custom-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+$custom-primary: mat.define-palette($sysqueue-primary, 500);
+$custom-accent: mat.define-palette($sysqueue-accent, 500);
 $custom-warn: mat.define-palette(mat.$red-palette);
 
-$custom-theme: mat.define-light-theme((
-  color: (
-    primary: $custom-primary,
-    accent: $custom-accent,
-    warn: $custom-warn,
-  ),
-  typography: mat.define-typography-config(),
-  density: 0,
-));
+$custom-theme: mat.define-light-theme((color: (primary: $custom-primary,
+        accent: $custom-accent,
+        warn: $custom-warn,
+      ),
+      typography: mat.define-typography-config($font-family: 'DM Sans, "Helvetica Neue", sans-serif',
+      ),
+      density: 0,
+    ));
 
 // Include theme styles for core and each component used in your app
 @include mat.all-component-themes($custom-theme);
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+:root {
+  --primary-color: #234C6A;
+  /* Deep Blue */
+  --secondary-color: #1e4159;
+  --accent-color: #D99E2F;
+  /* Gold */
+  --text-dark: #2D2D2D;
+  --text-light: #F9F9F9;
+  --bg-color: #FAFAFA;
+}
 
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+}
+
+// Utility classes
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.text-gold {
+  color: var(--accent-color);
+}
+
+.text-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+// Component Overrides or Helpers
+.mat-mdc-button-base {
+  border-radius: 50px !important; // Pill shape buttons
+}

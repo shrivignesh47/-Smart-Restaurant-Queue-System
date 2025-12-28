@@ -1,0 +1,107 @@
+<div class="queue-container">
+    <div class="status-card">
+        <div class="status-header">
+            <h3>Current Queue Status</h3>
+            <span class="live-badge"><span class="pulse"></span> Live</span>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-item">
+                <span class="value">{{ currentQueueSize }}</span>
+                <span class="label">Waiting Groups</span>
+            </div>
+            <div class="metric-item">
+                <span class="value">~{{ estimatedWaitTime }}</span>
+                <span class="label">Est. Wait (mins)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-area" *ngIf="!isInQueue">
+        <p class="hint-text">Join the queue now to save your spot!</p>
+
+        <form class="join-form">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Your Name</mat-label>
+                <input matInput [(ngModel)]="customerName" name="customerName" placeholder="Enter your name" required>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Party Size</mat-label>
+                <mat-select [(ngModel)]="partySize" name="partySize">
+                    <mat-option [value]="1">1 Person</mat-option>
+                    <mat-option [value]="2">2 People</mat-option>
+                    <mat-option [value]="3">3 People</mat-option>
+                    <mat-option [value]="4">4 People</mat-option>
+                    <mat-option [value]="5">5 People</mat-option>
+                    <mat-option [value]="6">6 People</mat-option>
+                    <mat-option [value]="7">7 People</mat-option>
+                    <mat-option [value]="8">8+ People</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <button mat-raised-button color="accent" class="w-full large-btn" type="button" (click)="joinQueue()">
+                <mat-icon>add_circle_outline</mat-icon> Join Queue
+            </button>
+        </form>
+
+        <div class="alternative-actions" style="margin-top: 24px; text-align: center;">
+            <p style="color: #666; margin-bottom: 12px;">Or explore other options:</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button mat-stroked-button (click)="checkTables()">
+                    <mat-icon>table_restaurant</mat-icon> Check Tables
+                </button>
+                <button mat-stroked-button (click)="makeReservation()">
+                    <mat-icon>event</mat-icon> Make Reservation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="user-ticket" *ngIf="isInQueue && userQueueEntry">
+        <div class="ticket-header">
+            <mat-icon>confirmation_number</mat-icon> Your Ticket
+        </div>
+        <div class="ticket-body">
+            <div class="customer-info" style="margin-bottom: 16px;">
+                <p><strong>Name:</strong> {{ userQueueEntry.customerName }}</p>
+                <p><strong>Party Size:</strong> {{ userQueueEntry.partySize }} {{ userQueueEntry.partySize === 1 ?
+                    'person' : 'people' }}</p>
+                <p><strong>Queue ID:</strong> {{ userQueueEntry.id }}</p>
+            </div>
+
+            <div class="position-display">
+                <span class="number">#{{ userPosition }}</span>
+                <span class="text">in line</span>
+            </div>
+
+            <div class="wait-info" style="margin: 16px 0;">
+                <p style="font-size: 1.1rem; color: var(--primary-color);">
+                    <mat-icon inline style="vertical-align: middle;">schedule</mat-icon>
+                    Estimated wait: <strong>{{ userQueueEntry.estimatedWaitTime }} minutes</strong>
+                </p>
+            </div>
+
+            <div class="progress-bar">
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            </div>
+            <p style="margin-top: 16px;">We'll notify you when your table is ready.</p>
+        </div>
+        <div class="ticket-actions">
+            <button mat-stroked-button color="warn" (click)="leaveQueue()">Leave Queue</button>
+        </div>
+    </div>
+
+    <!-- Queue List (Optional - shows all people in queue) -->
+    <div class="queue-list" *ngIf="queue.length > 0" style="margin-top: 32px;">
+        <h4>Current Queue</h4>
+        <mat-list>
+            <mat-list-item *ngFor="let entry of queue; let i = index"
+                [class.highlighted]="entry.id === userQueueEntry?.id">
+                <mat-icon matListItemIcon>person</mat-icon>
+                <div matListItemTitle>Position #{{ entry.position }} - {{ entry.customerName }}</div>
+                <div matListItemLine>Party of {{ entry.partySize }} • Wait: ~{{ entry.estimatedWaitTime }} min</div>
+            </mat-list-item>
+        </mat-list>
+    </div>
+</div>
