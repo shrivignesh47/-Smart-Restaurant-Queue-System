@@ -42,6 +42,10 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'sysqueue/admin',
+    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
+  },
+  {
     path: 'restaurants',
     redirectTo: '',
     pathMatch: 'full'

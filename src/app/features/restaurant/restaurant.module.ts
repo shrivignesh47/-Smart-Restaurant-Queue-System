@@ -6,10 +6,14 @@ import { RestaurantComponent } from './restaurant.component';
 import { TablesModule } from '../tables/tables.module';
 import { QueueModule } from '../queue/queue.module';
 import { ReservationModule } from '../reservation/reservation.module';
+import { RestaurantAdminLoginComponent } from './restaurant-admin-login/restaurant-admin-login.component';
+import { RestaurantAdminDashboardComponent } from './restaurant-admin-dashboard/restaurant-admin-dashboard.component';
 
 @NgModule({
   declarations: [
-    RestaurantComponent
+    RestaurantComponent,
+    RestaurantAdminLoginComponent,
+    RestaurantAdminDashboardComponent
   ],
   imports: [
     CommonModule,
