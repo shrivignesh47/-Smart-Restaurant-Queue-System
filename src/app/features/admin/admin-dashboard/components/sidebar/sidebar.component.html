@@ -1,0 +1,52 @@
+<div class="sidebar-brand">
+    <div class="logo-box">
+        <mat-icon>shield</mat-icon>
+    </div>
+    <h2>SysQueue <span>Admin</span></h2>
+</div>
+
+<div class="sidebar-profile">
+    <div class="avatar-container">
+        <img [src]="'https://ui-avatars.com/api/?name=Admin+User&background=667eea&color=fff'" alt="Admin">
+        <span class="online-indicator"></span>
+    </div>
+    <div class="profile-info">
+        <span class="p-name">System Admin</span>
+        <span class="p-role">Super Admin</span>
+    </div>
+</div>
+
+<nav class="sidebar-nav">
+    <div class="nav-section-label">Main Menu</div>
+    <a class="nav-item" [class.active]="activeTab === 'overview'" (click)="onTabChange('overview')">
+        <mat-icon>grid_view</mat-icon>
+        <span>Overview</span>
+    </a>
+    <a class="nav-item" [class.active]="activeTab === 'analytics'" (click)="onTabChange('analytics')">
+        <mat-icon>insights</mat-icon>
+        <span>Analytics</span>
+    </a>
+
+    <div class="nav-section-label">Management</div>
+    <a class="nav-item" [class.active]="activeTab === 'restaurants'" (click)="onTabChange('restaurants')">
+        <mat-icon>restaurant</mat-icon>
+        <span>Restaurants</span>
+    </a>
+    <a class="nav-item" [class.active]="activeTab === 'users'" (click)="onTabChange('users')">
+        <mat-icon>group</mat-icon>
+        <span>Users</span>
+    </a>
+
+    <div class="nav-section-label">Config</div>
+    <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="onTabChange('settings')">
+        <mat-icon>settings</mat-icon>
+        <span>Settings</span>
+    </a>
+</nav>
+
+<div class="sidebar-footer">
+    <button mat-button class="logout-btn" (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+        <span>Sign Out</span>
+    </button>
+</div>

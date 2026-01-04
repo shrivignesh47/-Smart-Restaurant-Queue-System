@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminLoginComponent } from './admin-login/admin-login.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdminSidebarComponent } from './admin-dashboard/components/sidebar/sidebar.component';
 import { AddRestaurantDialogComponent } from './admin-dashboard/add-restaurant-dialog.component';
 import { AddAdminDialogComponent } from './admin-dashboard/add-admin-dialog.component';
 import { AddManagerDialogComponent } from './admin-dashboard/add-manager-dialog.component';
@@ -12,6 +13,7 @@ import { SharedModule } from '../../shared/shared.module';
   declarations: [
     AdminLoginComponent,
     AdminDashboardComponent,
+    AdminSidebarComponent,
     AddRestaurantDialogComponent,
     AddAdminDialogComponent,
     AddManagerDialogComponent
