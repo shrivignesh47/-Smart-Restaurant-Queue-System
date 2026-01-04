@@ -26,8 +26,9 @@ export class HeaderComponent implements OnInit {
 
   openLoginDialog() {
     const dialogRef = this.dialog.open(LoginDialogComponent, {
-      width: '500px',
-      maxWidth: '95vw'
+      width: '100%',
+      maxWidth: '480px',
+      panelClass: 'custom-dialog-container'
     });
 
     dialogRef.afterClosed().subscribe(result => {

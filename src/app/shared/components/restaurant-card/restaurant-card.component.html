@@ -1,0 +1,60 @@
+<mat-card class="restaurant-card" [routerLink]="['/', restaurant.name]">
+    <img mat-card-image [src]="restaurant.image" [alt]="restaurant.name" class="restaurant-image">
+    <mat-card-content>
+        <div class="card-header">
+            <div class="restaurant-info">
+                <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+                <p class="restaurant-location">
+                    <mat-icon>location_on</mat-icon>
+                    {{ restaurant.location }}
+                </p>
+            </div>
+            <span class="rating-badge">
+                <mat-icon class="star-icon">star</mat-icon>
+                {{ restaurant.rating }}
+            </span>
+        </div>
+
+        <div class="cuisine-tags">
+            <span class="tag" *ngFor="let cuisine of restaurant.cuisine">{{ cuisine }}</span>
+        </div>
+
+        <p class="restaurant-description" *ngIf="showFullDetails">
+            {{ restaurant.description }}
+        </p>
+
+        <div class="specialties" *ngIf="showFullDetails">
+            <p class="specialties-label">Specialties:</p>
+            <div class="specialty-tags">
+                <span class="specialty-tag" *ngFor="let specialty of restaurant.specialties">
+                    {{ specialty }}
+                </span>
+            </div>
+        </div>
+
+        <div class="status-info">
+            <div class="queue-status" [ngClass]="restaurant.status.toLowerCase()">
+                <span class="dot"></span> {{ restaurant.status }} Queue
+            </div>
+            <div class="wait-time">
+                <mat-icon inline>schedule</mat-icon> ~{{ restaurant.waitTime }}
+            </div>
+        </div>
+
+        <div class="additional-info" *ngIf="showFullDetails">
+            <div class="info-item">
+                <mat-icon>schedule</mat-icon>
+                <span>{{ restaurant.openingHours }}</span>
+            </div>
+            <div class="info-item">
+                <mat-icon>payments</mat-icon>
+                <span>{{ restaurant.priceRange }}</span>
+            </div>
+        </div>
+    </mat-card-content>
+    <mat-card-actions>
+        <button mat-stroked-button color="primary" class="view-btn">
+            View Restaurant
+        </button>
+    </mat-card-actions>
+</mat-card>

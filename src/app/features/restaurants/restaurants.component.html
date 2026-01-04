@@ -2,8 +2,8 @@
     <!-- Header -->
     <div class="restaurants-header">
         <div class="header-content">
-            <h1>Discover Restaurants</h1>
-            <p>Find the perfect place for your next meal</p>
+            <h1>Tamil Nadu Restaurants</h1>
+            <p>Discover authentic South Indian dining experiences across Tamil Nadu</p>
         </div>
     </div>
 
@@ -17,16 +17,25 @@
                 <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
 
-            <div class="filter-chips">
-                <mat-chip-listbox aria-label="Cuisine filter" [(ngModel)]="selectedCuisine"
-                    (ngModelChange)="filterRestaurants()">
-                    <mat-chip-option value="">All Cuisines</mat-chip-option>
-                    <mat-chip-option value="italian">Italian</mat-chip-option>
-                    <mat-chip-option value="chinese">Chinese</mat-chip-option>
-                    <mat-chip-option value="indian">Indian</mat-chip-option>
-                    <mat-chip-option value="mexican">Mexican</mat-chip-option>
-                    <mat-chip-option value="japanese">Japanese</mat-chip-option>
-                </mat-chip-listbox>
+            <div class="filter-section">
+                <mat-form-field appearance="outline" class="city-filter">
+                    <mat-label>Filter by City</mat-label>
+                    <mat-select [(ngModel)]="selectedCity" (ngModelChange)="filterRestaurants()">
+                        <mat-option value="all">All Cities</mat-option>
+                        <mat-option *ngFor="let city of cities" [value]="city">{{ city }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>location_city</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="sort-field">
+                    <mat-label>Sort by</mat-label>
+                    <mat-select [(ngModel)]="sortBy" (ngModelChange)="sortRestaurants()">
+                        <mat-option value="rating">Highest Rated</mat-option>
+                        <mat-option value="name">Name (A-Z)</mat-option>
+                        <mat-option value="waitTime">Shortest Wait</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>sort</mat-icon>
+                </mat-form-field>
             </div>
         </div>
     </div>
@@ -34,86 +43,13 @@
     <!-- Restaurants Grid -->
     <div class="restaurants-content">
         <div class="results-header">
-            <h2>{{ filteredRestaurants.length }} Restaurants Found</h2>
-            <mat-form-field appearance="outline" class="sort-field">
-                <mat-label>Sort by</mat-label>
-                <mat-select [(ngModel)]="sortBy" (ngModelChange)="sortRestaurants()">
-                    <mat-option value="rating">Highest Rated</mat-option>
-                    <mat-option value="name">Name (A-Z)</mat-option>
-                    <mat-option value="distance">Nearest</mat-option>
-                    <mat-option value="price">Price (Low to High)</mat-option>
-                </mat-select>
-            </mat-form-field>
+            <h2>{{ filteredRestaurants.length }} Restaurant{{ filteredRestaurants.length !== 1 ? 's' : '' }} Found</h2>
         </div>
 
         <div class="restaurants-grid">
-            <mat-card *ngFor="let restaurant of filteredRestaurants" class="restaurant-card"
-                (click)="viewRestaurant(restaurant)">
-                <div class="card-image">
-                    <img [src]="restaurant.image" [alt]="restaurant.name">
-                    <div class="status-badge" [class.open]="restaurant.isOpen">
-                        {{ restaurant.isOpen ? 'OPEN' : 'CLOSED' }}
-                    </div>
-                    <button mat-icon-button class="favorite-btn" (click)="toggleFavorite(restaurant, $event)">
-                        <mat-icon [class.favorited]="restaurant.isFavorite">
-                            {{ restaurant.isFavorite ? 'favorite' : 'favorite_border' }}
-                        </mat-icon>
-                    </button>
-                </div>
-
-                <mat-card-content>
-                    <div class="card-header">
-                        <h3>{{ restaurant.name }}</h3>
-                        <div class="rating">
-                            <mat-icon>star</mat-icon>
-                            <span>{{ restaurant.rating }}</span>
-                        </div>
-                    </div>
-
-                    <div class="cuisine-tags">
-                        <mat-chip *ngFor="let cuisine of restaurant.cuisines">{{ cuisine }}</mat-chip>
-                    </div>
-
-                    <div class="restaurant-info">
-                        <div class="info-item">
-                            <mat-icon>location_on</mat-icon>
-                            <span>{{ restaurant.location }}</span>
-                        </div>
-                        <div class="info-item">
-                            <mat-icon>access_time</mat-icon>
-                            <span>{{ restaurant.hours }}</span>
-                        </div>
-                        <div class="info-item">
-                            <mat-icon>attach_money</mat-icon>
-                            <span>{{ restaurant.priceRange }}</span>
-                        </div>
-                    </div>
-
-                    <div class="availability-info">
-                        <div class="availability-item">
-                            <mat-icon [style.color]="restaurant.tablesAvailable > 0 ? '#48bb78' : '#f56565'">
-                                event_seat
-                            </mat-icon>
-                            <span>{{ restaurant.tablesAvailable }} tables available</span>
-                        </div>
-                        <div class="availability-item">
-                            <mat-icon>people</mat-icon>
-                            <span>{{ restaurant.queueLength }} in queue</span>
-                        </div>
-                    </div>
-
-                    <div class="card-actions">
-                        <button mat-raised-button color="primary" (click)="bookTable(restaurant, $event)">
-                            <mat-icon>event_available</mat-icon>
-                            Book Table
-                        </button>
-                        <button mat-stroked-button (click)="viewMenu(restaurant, $event)">
-                            <mat-icon>restaurant_menu</mat-icon>
-                            View Menu
-                        </button>
-                    </div>
-                </mat-card-content>
-            </mat-card>
+            <app-restaurant-card *ngFor="let restaurant of filteredRestaurants" [restaurant]="restaurant"
+                [showFullDetails]="true">
+            </app-restaurant-card>
         </div>
 
         <!-- Empty State -->

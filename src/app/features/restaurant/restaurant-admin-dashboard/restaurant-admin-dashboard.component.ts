@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 interface QueueCustomer {
   id: number;
@@ -43,6 +44,9 @@ export class RestaurantAdminDashboardComponent implements OnInit {
   restaurantName = '';
   restaurantOnline = true;
   todayRevenue = 45000;
+  isMobile = false;
+  sidenavOpened = true; // Default for desktop
+  isSidebarOpen = true; // Added for explicit control
 
   queueList: QueueCustomer[] = [
     { id: 1, name: 'John Doe', phone: '+91 9876543210', partySize: 4, waitTime: 15, joinedAt: new Date() },
@@ -83,15 +87,54 @@ export class RestaurantAdminDashboardComponent implements OnInit {
     acceptReservations: true
   };
 
+  profile = {
+    name: 'Manager',
+    email: 'manager@annapoorna.com',
+    phone: '+91 9876543210',
+    logoUrl: 'assets/images/logo-placeholder.png' // Default logo
+  };
+
+  passwordForm = {
+    current: '',
+    new: '',
+    confirm: ''
+  };
+
+  // Restaurant Public Page Configuration
+  configuration = {
+    heroImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
+    themeColor: '#ff5630',
+    tagline: 'Authentic South Indian Cuisine',
+    description: 'Famous for authentic South Indian vegetarian cuisine with a legacy of over 60 years.',
+    address: '394, East Arokiasamy Road, RS Puram, Coimbatore - 641002',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1559339352-11d035aa65de',
+      'https://images.unsplash.com/photo-1544148103-0773bf10d330',
+      'https://images.unsplash.com/photo-1550966871-3ed3c47e2ce2'
+    ] as string[],
+    menuImages: [
+      'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
+      'https://images.unsplash.com/photo-1473093226795-af9932fe5856'
+    ] as string[]
+  };
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private breakpointObserver: BreakpointObserver
   ) { }
 
   ngOnInit(): void {
     this.restaurantName = this.route.snapshot.paramMap.get('restaurantName') || '';
+
+    // Responsive Check
+    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
+      this.isMobile = result.matches;
+      this.sidenavOpened = !this.isMobile;
+      this.isSidebarOpen = !this.isMobile;
+    });
 
     // Check if manager is logged in
     const managerToken = localStorage.getItem(`manager_${this.restaurantName}`);
@@ -99,10 +142,23 @@ export class RestaurantAdminDashboardComponent implements OnInit {
       this.router.navigate([this.restaurantName, 'admin']);
     }
 
-    // Load saved settings
+    // Load saved settings & configuration
     const savedSettings = localStorage.getItem(`settings_${this.restaurantName}`);
     if (savedSettings) {
-      this.settings = JSON.parse(savedSettings);
+      const parsed = JSON.parse(savedSettings);
+      // Merge saved settings with defaults to ensure all fields exist
+      this.settings = { ...this.settings, ...parsed };
+    }
+
+    const savedConfig = localStorage.getItem(`config_${this.restaurantName}`);
+    if (savedConfig) {
+      this.configuration = { ...this.configuration, ...JSON.parse(savedConfig) };
+    }
+
+    // Load profile logo if saved
+    const savedProfile = localStorage.getItem(`profile_${this.restaurantName}`);
+    if (savedProfile) {
+      this.profile = JSON.parse(savedProfile);
     }
   }
 
@@ -113,9 +169,85 @@ export class RestaurantAdminDashboardComponent implements OnInit {
       tables: 'Table Management',
       reservations: 'Reservations',
       analytics: 'Analytics',
-      settings: 'Settings'
+      settings: 'Settings',
+      profile: 'My Profile',
+      configuration: 'Website Configuration'
     };
     return titles[this.activeTab] || 'Dashboard';
+  }
+
+  // ... (getOccupiedTables, toggleRestaurantStatus)
+
+  // Profile Management
+  saveProfile(): void {
+    localStorage.setItem(`profile_${this.restaurantName}`, JSON.stringify(this.profile));
+    this.snackBar.open('Profile updated successfully', 'Close', { duration: 3000, panelClass: ['success-snackbar'] });
+  }
+
+  updateLogo(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      // Mock uploading by creating a fake local URL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.profile.logoUrl = e.target.result;
+        this.saveProfile();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // Configuration Management
+  saveConfiguration(): void {
+    localStorage.setItem(`config_${this.restaurantName}`, JSON.stringify(this.configuration));
+    this.snackBar.open('Website configuration saved!', 'Close', { duration: 3000, panelClass: ['success-snackbar'] });
+  }
+
+  // Password Management
+  changePassword(): void {
+    if (this.passwordForm.new !== this.passwordForm.confirm) {
+      this.snackBar.open('Passwords do not match', 'Close', { duration: 3000, panelClass: ['error-snackbar'] });
+      return;
+    }
+    // Mock API call
+    this.snackBar.open('Password changed successfully', 'Close', { duration: 3000, panelClass: ['success-snackbar'] });
+    this.passwordForm = { current: '', new: '', confirm: '' };
+  }
+
+  // Image Management Helpers
+  processFile(event: any, callback: (result: string) => void) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => callback(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onGallerySelect(event: any) {
+    this.processFile(event, (result) => {
+      if (!this.configuration.galleryImages) this.configuration.galleryImages = [];
+      this.configuration.galleryImages.push(result);
+      this.saveConfiguration();
+    });
+  }
+
+  onMenuSelect(event: any) {
+    this.processFile(event, (result) => {
+      if (!this.configuration.menuImages) this.configuration.menuImages = [];
+      this.configuration.menuImages.push(result);
+      this.saveConfiguration();
+    });
+  }
+
+  removeGalleryImage(index: number) {
+    this.configuration.galleryImages.splice(index, 1);
+    this.saveConfiguration();
+  }
+
+  removeMenuImage(index: number) {
+    this.configuration.menuImages.splice(index, 1);
+    this.saveConfiguration();
   }
 
   getOccupiedTables(): number {

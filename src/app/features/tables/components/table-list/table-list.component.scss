@@ -1,3 +1,275 @@
+.tables-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 960px) {
+    padding: 24px 16px;
+  }
+}
+
+// My Bookings Styles
+.my-bookings-header {
+  margin-bottom: 32px;
+  text-align: left;
+  /* Explicitly align with left edge */
+
+  h2 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #1a202c;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  p {
+    color: #718096;
+    font-size: 1.1rem;
+  }
+}
+
+.bookings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.booking-card-modern {
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  .booking-card-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+
+    .restaurant-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+      display: flex;
+      align-items: flex-end;
+      padding: 16px;
+    }
+
+    .status-badge-modern {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      &.status-confirmed {
+        background: rgba(72, 187, 120, 0.95);
+        color: white;
+      }
+
+      &.status-pending {
+        background: rgba(237, 137, 54, 0.95);
+        color: white;
+      }
+    }
+  }
+
+  .booking-content {
+    padding: 20px !important;
+  }
+
+  .booking-header {
+    margin-bottom: 20px;
+
+    .restaurant-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin: 0 0 8px 0;
+    }
+
+    .booking-time {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #718096;
+      font-size: 0.95rem;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .booking-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+
+    .detail-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      background: #f7fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+
+      &.detail-item-full {
+        grid-column: 1 / -1;
+      }
+
+      .detail-icon {
+        width: 36px;
+        height: 36px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          color: #5a67d8;
+        }
+      }
+
+      .detail-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+
+        .detail-label {
+          font-size: 0.75rem;
+          color: #718096;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+          font-size: 0.95rem;
+          color: #2d3748;
+          font-weight: 600;
+
+          &.ticket-id {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid #cbd5e0;
+          }
+        }
+      }
+    }
+  }
+
+  .booking-actions {
+    padding: 16px 20px !important;
+    background: #f7fafc;
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid #e2e8f0;
+
+    .action-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+.no-bookings-state {
+  text-align: center;
+  padding: 60px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+
+  .no-bookings-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: white;
+    }
+  }
+
+  h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin: 0 0 24px 0;
+    opacity: 0.95;
+  }
+
+  button {
+    background: white !important;
+    color: #667eea !important;
+    font-weight: 600;
+  }
+}
+
+// Restaurant Tables Styles
 .tables-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -14,11 +286,11 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   }
 
   .table-icon {
@@ -42,13 +314,13 @@
   .table-info {
     margin-bottom: 20px;
     width: 100%;
-    
+
     h4 {
       margin: 0 0 8px;
       font-weight: 700;
       font-size: 1.1rem;
     }
-    
+
     .capacity {
       color: #777;
       margin: 0 0 12px;
@@ -58,7 +330,7 @@
       justify-content: center;
       gap: 4px;
     }
-    
+
     .status-badge {
       display: inline-block;
       padding: 6px 16px;
@@ -70,23 +342,42 @@
   }
 
   .actions {
-      width: 100%;
+    width: 100%;
   }
 
   &.status-available {
     border-color: #a5d6a7;
-    .table-icon { background: #e8f5e9; mat-icon { color: #2e7d32; } }
-    .status-badge { background: #e8f5e9; color: #2e7d32; }
+
+    .table-icon {
+      background: #e8f5e9;
+
+      mat-icon {
+        color: #2e7d32;
+      }
+    }
+
+    .status-badge {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
   }
 
   &.status-occupied {
     opacity: 0.8;
     background: #fafafa;
-    .status-badge { background: #ffebee; color: #c62828; }
+
+    .status-badge {
+      background: #ffebee;
+      color: #c62828;
+    }
   }
 
   &.status-reserved {
     opacity: 0.9;
-    .status-badge { background: #fff3e0; color: #ef6c00; }
+
+    .status-badge {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
   }
 }

@@ -1,186 +1,261 @@
 <div class="admin-dashboard">
-    <!-- Sidebar -->
     <mat-sidenav-container class="dashboard-container">
-        <mat-sidenav mode="side" opened class="sidebar">
-            <div class="sidebar-header">
-                <mat-icon>admin_panel_settings</mat-icon>
-                <h2>SysQueue Admin</h2>
+        <!-- Sidebar -->
+        <mat-sidenav mode="side" opened class="sidebar" #sidenav>
+            <div class="sidebar-brand">
+                <div class="logo-box">
+                    <mat-icon>shield</mat-icon>
+                </div>
+                <h2>SysQueue <span>Admin</span></h2>
             </div>
 
-            <mat-nav-list>
-                <a mat-list-item [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
-                    <mat-icon>dashboard</mat-icon>
+            <div class="sidebar-profile">
+                <div class="avatar-container">
+                    <img [src]="'https://ui-avatars.com/api/?name=Admin+User&background=667eea&color=fff'" alt="Admin">
+                    <span class="online-indicator"></span>
+                </div>
+                <div class="profile-info">
+                    <span class="p-name">System Admin</span>
+                    <span class="p-role">Super Admin</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main Menu</div>
+                <a class="nav-item" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
+                    <mat-icon>grid_view</mat-icon>
                     <span>Overview</span>
                 </a>
-                <a mat-list-item [class.active]="activeTab === 'analytics'" (click)="activeTab = 'analytics'">
-                    <mat-icon>analytics</mat-icon>
+                <a class="nav-item" [class.active]="activeTab === 'analytics'" (click)="activeTab = 'analytics'">
+                    <mat-icon>insights</mat-icon>
                     <span>Analytics</span>
                 </a>
-                <a mat-list-item [class.active]="activeTab === 'restaurants'" (click)="activeTab = 'restaurants'">
+
+                <div class="nav-section-label">Management</div>
+                <a class="nav-item" [class.active]="activeTab === 'restaurants'" (click)="activeTab = 'restaurants'">
                     <mat-icon>restaurant</mat-icon>
                     <span>Restaurants</span>
                 </a>
-                <a mat-list-item [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
-                    <mat-icon>people</mat-icon>
+                <a class="nav-item" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
+                    <mat-icon>group</mat-icon>
                     <span>Users</span>
                 </a>
-                <a mat-list-item [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'">
+
+                <div class="nav-section-label">Config</div>
+                <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'">
                     <mat-icon>settings</mat-icon>
                     <span>Settings</span>
                 </a>
-                <mat-divider></mat-divider>
-                <a mat-list-item (click)="logout()">
+            </nav>
+
+            <div class="sidebar-footer">
+                <button mat-button class="logout-btn" (click)="logout()">
                     <mat-icon>logout</mat-icon>
-                    <span>Logout</span>
-                </a>
-            </mat-nav-list>
+                    <span>Sign Out</span>
+                </button>
+            </div>
         </mat-sidenav>
 
         <mat-sidenav-content class="main-content">
             <!-- Header -->
-            <div class="dashboard-header">
-                <h1>{{ getTabTitle() }}</h1>
-                <div class="header-actions">
-                    <span class="admin-name">Admin User</span>
-                    <button mat-icon-button [matMenuTriggerFor]="menu">
-                        <mat-icon>account_circle</mat-icon>
+            <header class="content-header">
+                <div class="header-left">
+                    <button mat-icon-button class="mobile-toggle" (click)="sidenav.toggle()">
+                        <mat-icon>menu</mat-icon>
                     </button>
-                    <mat-menu #menu="matMenu">
-                        <button mat-menu-item (click)="logout()">
-                            <mat-icon>logout</mat-icon>
-                            <span>Logout</span>
+                    <div class="page-title">
+                        <h1>{{ getTabTitle() }}</h1>
+                        <p class="breadcrumb">Admin / {{ activeTab | titlecase }}</p>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button mat-icon-button matTooltip="Notifications">
+                        <mat-icon matBadge="3" matBadgeColor="warn">notifications</mat-icon>
+                    </button>
+                    <div class="v-divider"></div>
+                    <div class="user-pill" [matMenuTriggerFor]="userMenu">
+                        <span class="user-name">Admin</span>
+                        <mat-icon>expand_more</mat-icon>
+                    </div>
+                    <mat-menu #userMenu="matMenu" xPosition="before">
+                        <button mat-menu-item (click)="activeTab = 'profile'">
+                            <mat-icon>person</mat-icon>
+                            <span>My Profile</span>
+                        </button>
+                        <button mat-menu-item (click)="activeTab = 'settings'">
+                            <mat-icon>settings</mat-icon>
+                            <span>Settings</span>
+                        </button>
+                        <mat-divider></mat-divider>
+                        <button mat-menu-item (click)="logout()" class="text-danger">
+                            <mat-icon class="text-danger">logout</mat-icon>
+                            <span class="text-danger">Sign Out</span>
                         </button>
                     </mat-menu>
                 </div>
-            </div>
+            </header>
 
-            <!-- Overview Tab -->
-            <div *ngIf="activeTab === 'overview'" class="tab-content">
-                <div class="stats-grid">
-                    <mat-card class="stat-card">
-                        <mat-icon class="stat-icon">restaurant</mat-icon>
-                        <div class="stat-value">{{ stats.totalRestaurants }}</div>
-                        <div class="stat-label">Total Restaurants</div>
-                        <div class="stat-change positive">+12% from last month</div>
-                    </mat-card>
+            <div class="scroll-content">
+                <!-- Overview Tab -->
+                <div *ngIf="activeTab === 'overview'" class="tab-fade-in">
+                    <div class="welcome-banner">
+                        <div class="banner-text">
+                            <h2>Welcome back, Admin! 👋</h2>
+                            <p>Here's what's happening with SysQueue today.</p>
+                        </div>
+                        <div class="banner-date">
+                            <mat-icon>calendar_today</mat-icon>
+                            <span>{{ today | date:'mediumDate' }}</span>
+                        </div>
+                    </div>
 
-                    <mat-card class="stat-card">
-                        <mat-icon class="stat-icon">people</mat-icon>
-                        <div class="stat-value">{{ stats.totalUsers }}</div>
-                        <div class="stat-label">Total Users</div>
-                        <div class="stat-change positive">+8% from last month</div>
-                    </mat-card>
-
-                    <mat-card class="stat-card">
-                        <mat-icon class="stat-icon">event_available</mat-icon>
-                        <div class="stat-value">{{ stats.totalBookings }}</div>
-                        <div class="stat-label">Total Bookings</div>
-                        <div class="stat-change positive">+15% from last month</div>
-                    </mat-card>
-
-                    <mat-card class="stat-card">
-                        <mat-icon class="stat-icon">attach_money</mat-icon>
-                        <div class="stat-value">₹{{ stats.revenue | number }}</div>
-                        <div class="stat-label">Revenue</div>
-                        <div class="stat-change positive">+20% from last month</div>
-                    </mat-card>
-                </div>
-
-                <div class="charts-section">
-                    <mat-card class="chart-card">
-                        <mat-card-header>
-                            <mat-card-title>Bookings Overview</mat-card-title>
-                        </mat-card-header>
-                        <mat-card-content>
-                            <p class="chart-placeholder">📊 Chart: Bookings trend over time</p>
-                        </mat-card-content>
-                    </mat-card>
-
-                    <mat-card class="chart-card">
-                        <mat-card-header>
-                            <mat-card-title>Revenue Growth</mat-card-title>
-                        </mat-card-header>
-                        <mat-card-content>
-                            <p class="chart-placeholder">📈 Chart: Revenue growth</p>
-                        </mat-card-content>
-                    </mat-card>
-                </div>
-            </div>
-
-            <!-- Analytics Tab -->
-            <div *ngIf="activeTab === 'analytics'" class="tab-content">
-                <mat-card>
-                    <mat-card-header>
-                        <mat-card-title>Analytics Dashboard</mat-card-title>
-                    </mat-card-header>
-                    <mat-card-content>
-                        <div class="analytics-grid">
-                            <div class="metric-card">
-                                <h3>Peak Hours</h3>
-                                <p class="metric-value">7 PM - 9 PM</p>
-                                <p class="metric-desc">Highest booking activity</p>
+                    <div class="stats-grid">
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box blue">
+                                <mat-icon>restaurant</mat-icon>
                             </div>
-                            <div class="metric-card">
-                                <h3>Avg Wait Time</h3>
-                                <p class="metric-value">15 mins</p>
-                                <p class="metric-desc">Across all restaurants</p>
-                            </div>
-                            <div class="metric-card">
-                                <h3>Satisfaction Rate</h3>
-                                <p class="metric-value">4.5/5</p>
-                                <p class="metric-desc">Customer ratings</p>
-                            </div>
-                            <div class="metric-card">
-                                <h3>Conversion Rate</h3>
-                                <p class="metric-value">68%</p>
-                                <p class="metric-desc">Queue to booking</p>
+                            <div class="stat-details">
+                                <span class="label">Restaurants</span>
+                                <h3 class="value">{{ stats.totalRestaurants }}</h3>
+                                <div class="trend up">
+                                    <mat-icon>trending_up</mat-icon>
+                                    <span>12% Inc</span>
+                                </div>
                             </div>
                         </div>
-                    </mat-card-content>
-                </mat-card>
-            </div>
 
-            <!-- Restaurants Tab -->
-            <div *ngIf="activeTab === 'restaurants'" class="tab-content">
-                <div class="action-bar">
-                    <button mat-raised-button color="primary" (click)="openAddRestaurantDialog()">
-                        <mat-icon>add</mat-icon>
-                        Add New Restaurant
-                    </button>
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box purple">
+                                <mat-icon>people</mat-icon>
+                            </div>
+                            <div class="stat-details">
+                                <span class="label">Total Users</span>
+                                <h3 class="value">{{ stats.totalUsers }}</h3>
+                                <div class="trend up">
+                                    <mat-icon>trending_up</mat-icon>
+                                    <span>8% Inc</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box orange">
+                                <mat-icon>pending_actions</mat-icon>
+                            </div>
+                            <div class="stat-details">
+                                <span class="label">Bookings</span>
+                                <h3 class="value">{{ stats.totalBookings }}</h3>
+                                <div class="trend up">
+                                    <mat-icon>trending_up</mat-icon>
+                                    <span>15% Inc</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box green">
+                                <mat-icon>payments</mat-icon>
+                            </div>
+                            <div class="stat-details">
+                                <span class="label">Revenue</span>
+                                <h3 class="value">₹{{ stats.revenue | number }}</h3>
+                                <div class="trend up">
+                                    <mat-icon>trending_up</mat-icon>
+                                    <span>20% Inc</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid-secondary">
+                        <mat-card class="modern-card chart-container">
+                            <mat-card-header>
+                                <mat-card-title>Weekly Bookings</mat-card-title>
+                                <button mat-icon-button><mat-icon>more_horiz</mat-icon></button>
+                            </mat-card-header>
+                            <mat-card-content>
+                                <div class="placeholder-visual">
+                                    <mat-icon>bar_chart</mat-icon>
+                                    <p>Booking trends will appear here</p>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+
+                        <mat-card class="modern-card recent-activity">
+                            <mat-card-header>
+                                <mat-card-title>Recent Activity</mat-card-title>
+                            </mat-card-header>
+                            <mat-card-content>
+                                <div class="activity-list">
+                                    <div class="activity-item">
+                                        <div class="activity-dot"></div>
+                                        <div class="activity-content">
+                                            <strong>New Restaurant Joined</strong>
+                                            <span>The Grand Palace registered</span>
+                                            <small>2 hours ago</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-dot blue"></div>
+                                        <div class="activity-content">
+                                            <strong>Settings Updated</strong>
+                                            <span>System maintenance scheduled</span>
+                                            <small>5 hours ago</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-dot green"></div>
+                                        <div class="activity-content">
+                                            <strong>New Account</strong>
+                                            <span>User John Doe created an account</span>
+                                            <small>Yesterday</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
                 </div>
 
-                <mat-card>
-                    <mat-card-content>
-                        <table mat-table [dataSource]="restaurants" class="full-width-table">
+                <!-- Restaurants Tab -->
+                <div *ngIf="activeTab === 'restaurants'" class="tab-fade-in">
+                    <div class="table-container-header glass-card">
+                        <div class="header-title-section">
+                            <h2>Restaurant Inventory</h2>
+                            <p>Manage all registered restaurant partners</p>
+                        </div>
+                        <button mat-flat-button color="primary" class="add-btn" (click)="openAddRestaurantDialog()">
+                            <mat-icon>add</mat-icon>
+                            Register Restaurant
+                        </button>
+                    </div>
+
+                    <mat-card class="modern-card table-card">
+                        <table mat-table [dataSource]="restaurants" class="modern-table">
                             <ng-container matColumnDef="name">
-                                <th mat-header-cell *matHeaderCellDef>Restaurant Name</th>
-                                <td mat-cell *matCellDef="let restaurant">{{ restaurant.name }}</td>
+                                <th mat-header-cell *matHeaderCellDef>Name</th>
+                                <td mat-cell *matCellDef="let restaurant" class="bold-cell">{{ restaurant.name }}</td>
                             </ng-container>
 
                             <ng-container matColumnDef="type">
                                 <th mat-header-cell *matHeaderCellDef>Type</th>
                                 <td mat-cell *matCellDef="let restaurant">
-                                    <mat-chip [class.public]="restaurant.type === 'public'"
-                                        [class.private]="restaurant.type === 'private'">
-                                        {{ restaurant.type }}
-                                    </mat-chip>
+                                    <span class="type-badge" [ngClass]="restaurant.type">
+                                        {{ restaurant.type | titlecase }}
+                                    </span>
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="status">
                                 <th mat-header-cell *matHeaderCellDef>Status</th>
                                 <td mat-cell *matCellDef="let restaurant">
-                                    <mat-chip [class.active]="restaurant.status === 'active'"
-                                        [class.inactive]="restaurant.status === 'inactive'">
-                                        {{ restaurant.status }}
-                                    </mat-chip>
+                                    <span class="status-indicator" [ngClass]="restaurant.status">
+                                        {{ restaurant.status | titlecase }}
+                                    </span>
                                 </td>
                             </ng-container>
 
-                            <ng-container matColumnDef="tables">
-                                <th mat-header-cell *matHeaderCellDef>Tables</th>
-                                <td mat-cell *matCellDef="let restaurant">{{ restaurant.tables }}</td>
-                            </ng-container>
 
                             <ng-container matColumnDef="actions">
                                 <th mat-header-cell *matHeaderCellDef>Actions</th>
@@ -195,15 +270,11 @@
                                         </button>
                                         <button mat-menu-item (click)="createSubUser(restaurant)">
                                             <mat-icon>person_add</mat-icon>
-                                            <span>Create Sub-User</span>
-                                        </button>
-                                        <button mat-menu-item (click)="viewAnalytics(restaurant)">
-                                            <mat-icon>analytics</mat-icon>
-                                            <span>View Analytics</span>
+                                            <span>Create Manager</span>
                                         </button>
                                         <button mat-menu-item (click)="deleteRestaurant(restaurant)">
-                                            <mat-icon>delete</mat-icon>
-                                            <span>Delete</span>
+                                            <mat-icon class="text-danger">delete</mat-icon>
+                                            <span class="text-danger">Remove</span>
                                         </button>
                                     </mat-menu>
                                 </td>
@@ -212,43 +283,221 @@
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                         </table>
-                    </mat-card-content>
-                </mat-card>
-            </div>
+                    </mat-card>
+                </div>
 
-            <!-- Users Tab -->
-            <div *ngIf="activeTab === 'users'" class="tab-content">
-                <mat-card>
-                    <mat-card-header>
-                        <mat-card-title>User Management</mat-card-title>
-                    </mat-card-header>
-                    <mat-card-content>
-                        <p>Total Users: {{ stats.totalUsers }}</p>
-                        <p>Sub-users (Restaurant Managers): {{ subUsers.length }}</p>
-                        <button mat-raised-button color="primary" (click)="createSubUser(null)">
+                <!-- Users Tab -->
+                <div *ngIf="activeTab === 'users'" class="tab-fade-in">
+                    <div class="table-container-header glass-card">
+                        <div class="header-title-section">
+                            <h2>Admin User Management</h2>
+                            <p>Manage system administrators and support staff</p>
+                        </div>
+                        <button mat-flat-button color="primary" class="add-btn" (click)="openAddAdminDialog()">
                             <mat-icon>person_add</mat-icon>
-                            Create Sub-User
+                            Add New Admin
                         </button>
-                    </mat-card-content>
-                </mat-card>
-            </div>
+                    </div>
 
-            <!-- Settings Tab -->
-            <div *ngIf="activeTab === 'settings'" class="tab-content">
-                <mat-card>
-                    <mat-card-header>
-                        <mat-card-title>System Settings</mat-card-title>
-                    </mat-card-header>
-                    <mat-card-content>
-                        <h3>General Settings</h3>
-                        <mat-slide-toggle [(ngModel)]="settings.maintenanceMode">Maintenance Mode</mat-slide-toggle>
-                        <br><br>
-                        <mat-slide-toggle [(ngModel)]="settings.allowNewRegistrations">Allow New
-                            Registrations</mat-slide-toggle>
-                        <br><br>
-                        <button mat-raised-button color="primary" (click)="saveSettings()">Save Settings</button>
-                    </mat-card-content>
-                </mat-card>
+                    <mat-card class="modern-card table-card">
+                        <table mat-table [dataSource]="adminUsers" class="modern-table">
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef>Full Name</th>
+                                <td mat-cell *matCellDef="let user" class="bold-cell">
+                                    <div class="flex items-center gap-3">
+                                        <div class="user-avatar-sm">{{ user.fullName.charAt(0) }}</div>
+                                        {{ user.fullName }}
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="username">
+                                <th mat-header-cell *matHeaderCellDef>Username</th>
+                                <td mat-cell *matCellDef="let user">@{{ user.username }}</td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="role">
+                                <th mat-header-cell *matHeaderCellDef>Role</th>
+                                <td mat-cell *matCellDef="let user">
+                                    <span class="role-badge">{{ user.role }}</span>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef>Status</th>
+                                <td mat-cell *matCellDef="let user">
+                                    <span class="status-indicator" [ngClass]="user.status">
+                                        {{ user.status | titlecase }}
+                                    </span>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                                <td mat-cell *matCellDef="let user">
+                                    <button mat-icon-button color="warn" matTooltip="Remove Access"
+                                        [disabled]="user.username === 'admin'">
+                                        <mat-icon>block</mat-icon>
+                                    </button>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="adminColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: adminColumns;"></tr>
+                        </table>
+                    </mat-card>
+
+                    <!-- Sub-section for Sub-Users (Restaurant Managers) -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold mb-4 text-[#1b2559]">Restaurant Managers</h3>
+                        <mat-card class="modern-card">
+                            <mat-list>
+                                <div *ngIf="subUsers.length === 0" class="p-4 text-center text-gray-400">
+                                    <p>No sub-users created yet. Add a restaurant with manager credentials to see them
+                                        here.</p>
+                                </div>
+                                <mat-list-item *ngFor="let user of subUsers">
+                                    <mat-icon matListItemIcon>store</mat-icon>
+                                    <h3 matListItemTitle>{{ user.username }}</h3>
+                                    <p matListItemLine>Manager for {{ user.restaurant }}</p>
+                                    <button mat-icon-button matListItemMeta>
+                                        <mat-icon>edit</mat-icon>
+                                    </button>
+                                </mat-list-item>
+                            </mat-list>
+                        </mat-card>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div *ngIf="activeTab === 'analytics'" class="tab-fade-in">
+                    <div class="stats-grid">
+                        <mat-card class="modern-card">
+                            <mat-card-header>
+                                <mat-card-title>Monthly Revenue Trend</mat-card-title>
+                            </mat-card-header>
+                            <mat-card-content class="chart-content">
+                                <div class="bar-chart-mock">
+                                    <div *ngFor="let data of monthlyRevenue" class="bar"
+                                        [style.height.%]="(data.value / getMaxRevenue()) * 100"
+                                        [matTooltip]="data.month + ': ₹' + (data.value | number)">
+                                    </div>
+                                </div>
+                                <div class="chart-labels">
+                                    <span *ngFor="let data of monthlyRevenue">{{ data.month }}</span>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+
+                        <mat-card class="modern-card">
+                            <mat-card-header>
+                                <mat-card-title>User Growth</mat-card-title>
+                            </mat-card-header>
+                            <mat-card-content class="chart-content">
+                                <div class="growth-stat">
+                                    <h3 class="text-4xl font-bold text-primary">{{ stats.totalUsers }}</h3>
+                                    <span class="text-gray-500 font-semibold">Total Active Users</span>
+                                </div>
+                                <div class="growth-stat mt-8">
+                                    <span class="text-success flex items-center justify-center gap-2">
+                                        <mat-icon>trending_up</mat-icon>
+                                        +{{ userGrowth[userGrowth.length-1].users -
+                                        userGrowth[userGrowth.length-2].users }} New
+                                    </span>
+                                    <small>vs last month</small>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div *ngIf="activeTab === 'settings'" class="tab-fade-in">
+                    <mat-card class="modern-card p-4">
+                        <div class="flex flex-col gap-6">
+                            <div class="setting-group">
+                                <h3>General Configuration</h3>
+                                <div class="grid grid-cols-2 gap-4 py-4 border-b">
+                                    <mat-form-field appearance="outline">
+                                        <mat-label>System Name</mat-label>
+                                        <input matInput [(ngModel)]="settings.systemName">
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline">
+                                        <mat-label>Default Currency</mat-label>
+                                        <mat-select [(ngModel)]="settings.defaultCurrency">
+                                            <mat-option value="INR">INR (₹)</mat-option>
+                                            <mat-option value="USD">USD ($)</mat-option>
+                                            <mat-option value="EUR">EUR (€)</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+
+                                <h3>System Preferences</h3>
+                                <div class="flex justify-between items-center py-4 border-b">
+                                    <div>
+                                        <p class="font-bold">Maintenance Mode</p>
+                                        <p class="text-sm text-gray-500">Temporarily disable access for users</p>
+                                    </div>
+                                    <mat-slide-toggle [(ngModel)]="settings.maintenanceMode"
+                                        color="warn"></mat-slide-toggle>
+                                </div>
+                                <div class="flex justify-between items-center py-4 border-b">
+                                    <div>
+                                        <p class="font-bold">Allow New Registrations</p>
+                                        <p class="text-sm text-gray-500">Enable new partners to sign up</p>
+                                    </div>
+                                    <mat-slide-toggle [(ngModel)]="settings.allowNewRegistrations"
+                                        color="primary"></mat-slide-toggle>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-3 mt-4">
+                                <button mat-flat-button color="primary" (click)="saveSettings()">Save Changes</button>
+                            </div>
+                        </div>
+                    </mat-card>
+                </div>
+
+                <!-- Profile Tab -->
+                <div *ngIf="activeTab === 'profile'" class="tab-fade-in">
+                    <div class="profile-layout grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <mat-card class="modern-card col-span-1 text-center p-6">
+                            <div class="profile-avatar-lg mx-auto mb-4">
+                                <img [src]="'https://ui-avatars.com/api/?name=Admin+User&background=4318ff&color=fff&size=128'"
+                                    class="rounded-full">
+                            </div>
+                            <h2 class="text-xl font-bold">System Admin</h2>
+                            <p class="text-gray-500 mb-4">admin@sysqueue.com</p>
+                            <span class="role-badge mb-4 inline-block">Super Admin</span>
+                            <div class="w-full border-t pt-4 mt-4">
+                                <p class="text-sm text-gray-400">Member Since</p>
+                                <p class="font-semibold">Jan 2024</p>
+                            </div>
+                        </mat-card>
+
+                        <mat-card class="modern-card col-span-2 p-6">
+                            <h3 class="text-lg font-bold mb-6">Security Settings</h3>
+                            <form class="flex flex-col gap-4">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Current Password</mat-label>
+                                    <input matInput type="password">
+                                </mat-form-field>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <mat-form-field appearance="outline">
+                                        <mat-label>New Password</mat-label>
+                                        <input matInput type="password">
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline">
+                                        <mat-label>Confirm Password</mat-label>
+                                        <input matInput type="password">
+                                    </mat-form-field>
+                                </div>
+                                <div class="flex justify-end mt-2">
+                                    <button mat-flat-button color="primary">Update Password</button>
+                                </div>
+                            </form>
+                        </mat-card>
+                    </div>
+                </div>
             </div>
         </mat-sidenav-content>
     </mat-sidenav-container>

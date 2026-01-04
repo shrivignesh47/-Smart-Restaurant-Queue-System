@@ -1,38 +1,69 @@
 .login-dialog {
     padding: 32px;
-    max-width: 450px;
-    width: 90vw;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center children horizontally */
 }
 
 .close-btn {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
 }
 
 .dialog-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
     margin-bottom: 32px;
 }
 
+.logo-container {
+    width: 72px;
+    height: 72px;
+    background: #f0f4f8;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
 .logo-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
     color: var(--primary-color);
-    margin-bottom: 16px;
 }
 
 .dialog-header h2 {
     font-size: 1.75rem;
-    font-weight: 700;
+    font-weight: 800;
     margin: 0 0 8px;
-    color: #2d3748;
+    color: #1a202c;
+    text-align: center;
+    width: 100%;
+    letter-spacing: -0.5px;
 }
 
 .dialog-header p {
     color: #718096;
     margin: 0;
+    font-size: 1rem;
+    text-align: center;
+    width: 100%;
+}
+
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .full-width {
@@ -41,15 +72,58 @@
 }
 
 .otp-section {
-    margin-top: 16px;
+    width: 100%;
+    margin-top: 8px;
 }
 
 .submit-btn {
     width: 100%;
-    height: 48px;
-    margin-top: 16px;
-    font-size: 1rem;
-    font-weight: 600;
+    height: 54px;
+    margin-top: 24px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 27px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+}
+
+::ng-deep .login-dialog {
+    .mat-mdc-form-field {
+        width: 100%;
+    }
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #f7fafc !important;
+        border-radius: 12px !important;
+    }
+
+    .mat-mdc-form-field-flex {
+        align-items: center !important;
+    }
+
+    .mat-mdc-form-field-icon-prefix {
+        padding-left: 16px !important;
+        padding-right: 4px !important;
+        color: #1a202c !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .mat-mdc-form-field-icon-suffix {
+        padding-right: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .mat-mdc-form-field-infix {
+        padding-top: 18px !important;
+        padding-bottom: 18px !important;
+        min-height: auto !important;
+    }
+
+    .mat-mdc-form-field-subscript-wrapper {
+        padding: 0 16px !important;
+    }
 }
 
 ::ng-deep .login-dialog mat-spinner {
@@ -59,4 +133,43 @@
 
 ::ng-deep .login-dialog mat-spinner circle {
     stroke: white !important;
+}
+
+// Mobile responsiveness
+@media (max-width: 600px) {
+    .login-dialog {
+        padding: 24px 20px;
+    }
+
+    .dialog-header {
+        margin-bottom: 24px;
+    }
+
+    .logo-container {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+    }
+
+    .logo-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .dialog-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .submit-btn {
+        height: 48px;
+        font-size: 1rem;
+    }
+}
+
+// Tablet
+@media (min-width: 601px) and (max-width: 960px) {
+    .login-dialog {
+        padding: 32px;
+    }
 }

@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { RestaurantDataService, Restaurant } from '../../shared/services/restaurant-data.service';
 
 @Component({
   selector: 'app-home',
@@ -9,60 +10,28 @@ export class HomeComponent implements OnInit, OnDestroy {
   heroSlides = [
     {
       icon: 'auto_awesome',
-      badge: 'Smart Restaurant Management',
-      title1: 'Seamless Dining',
-      title2: 'Experience',
-      desc: 'Manage tables, queues, and reservations with our intelligent restaurant management system. No more chaos, just smooth operations.',
+      badge: 'Smart Tamil Restaurant Management',
+      title1: 'Authentic Tamil',
+      title2: 'Dining Experience',
+      desc: 'Skip the wait at your favorite Tamil restaurants - Annapoorna, Anandhas, Gowrishankar, HMR. Join the queue remotely and enjoy seamless dining.',
       ctaPrimary: 'View Tables',
       ctaSecondary: 'Join Queue',
       image: 'assets/images/hero1.png'
     },
     {
       icon: 'restaurant',
-      badge: 'Modern Dining',
-      title1: 'Taste the',
-      title2: 'Future',
-      desc: 'Experience the next generation of dining with smart queues and instant table reservations.',
+      badge: 'Traditional Tamil Cuisine',
+      title1: 'Savor the',
+      title2: 'Best of Tamil Nadu',
+      desc: 'Experience authentic South Indian flavors at popular restaurants with smart queue management and instant table reservations.',
       ctaPrimary: 'Explore',
       ctaSecondary: 'Learn More',
       image: 'assets/images/hero2.png'
     }
   ];
 
-  restaurants = [
-    {
-      name: 'The Gourmet Kitchen',
-      image: 'assets/images/hero1.png',
-      cuisine: ['Italian', 'Continental'],
-      status: 'Low',
-      waitTime: '5 mins',
-      rating: 4.5
-    },
-    {
-      name: 'Sushi Zen',
-      image: 'assets/images/hero2.png',
-      cuisine: ['Japanese', 'Sushi'],
-      status: 'Medium',
-      waitTime: '15 mins',
-      rating: 4.8
-    },
-    {
-      name: 'Burger Point',
-      image: 'assets/images/hero1.png',
-      cuisine: ['American', 'Fast Food'],
-      status: 'Busy',
-      waitTime: '45 mins',
-      rating: 4.2
-    },
-    {
-      name: 'Spice Route',
-      image: 'assets/images/hero2.png',
-      cuisine: ['Indian', 'Spicy'],
-      status: 'Low',
-      waitTime: '10 mins',
-      rating: 4.6
-    }
-  ];
+  restaurants: Restaurant[] = [];
+
 
   features = [
     { icon: 'table_bar', title: 'Real-Time Tables', desc: 'View live table availability and status updates instantly' },
@@ -72,9 +41,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   testimonials = [
-    { name: 'Sarah J.', role: 'Restaurant Manager', comment: 'This system transformed how we handle our weekend rush. No more angry customers waiting in line!', avatar: 'assets/images/hero1.png' },
-    { name: 'Mike T.', role: 'Food Blogger', comment: 'I love being able to see the wait time before I even leave my house. A game changer.', avatar: 'assets/images/hero2.png' },
-    { name: 'Emily R.', role: 'Daily Customer', comment: 'Booking a table has never been easier. Highly recommended!', avatar: 'assets/images/hero1.png' }
+    { name: 'Priya Krishnan', role: 'Restaurant Manager', comment: 'Smart Queue transformed how we handle our weekend rush at Annapoorna. No more angry customers waiting in line!', avatar: 'assets/images/hero1.png' },
+    { name: 'Rajesh Kumar', role: 'Food Blogger', comment: 'I love being able to see the wait time at Gowrishankar before I even leave my house. A game changer for Tamil food lovers!', avatar: 'assets/images/hero2.png' },
+    { name: 'Lakshmi Venkat', role: 'Regular Customer', comment: 'Booking a table at Anandhas has never been easier. The best way to enjoy authentic South Indian food without the wait!', avatar: 'assets/images/hero1.png' }
   ];
 
   customerFeatures = [
@@ -83,7 +52,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     { title: 'Real-Time Queue Position', desc: 'View real-time queue position and estimated waiting time.', icon: 'schedule' }
   ];
 
+  constructor(private restaurantDataService: RestaurantDataService) { }
+
   ngOnInit() {
+    // Load featured restaurants (first 4)
+    this.restaurants = this.restaurantDataService.getFeaturedRestaurants(4);
   }
 
   ngOnDestroy() {

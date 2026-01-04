@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/auth.guard';
+import { RestaurantGuard } from './core/guards/restaurant.guard';
 
 const routes: Routes = [
   {
@@ -37,22 +38,17 @@ const routes: Routes = [
     loadChildren: () => import('./features/restaurants/restaurants.module').then(m => m.RestaurantsModule)
   },
   {
-    path: 'restaurants/tables',
-    redirectTo: 'tables',
-    pathMatch: 'full'
-  },
-  {
     path: 'sysqueue/admin',
     loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
   },
   {
-    path: 'restaurants',
-    redirectTo: '',
-    pathMatch: 'full'
+    path: 'partner',
+    loadChildren: () => import('./features/partner/partner.module').then(m => m.PartnerModule)
   },
   {
     path: ':restaurantName',
-    loadChildren: () => import('./features/restaurant/restaurant.module').then(m => m.RestaurantModule)
+    loadChildren: () => import('./features/restaurant/restaurant.module').then(m => m.RestaurantModule),
+    canActivate: [RestaurantGuard]
   },
   {
     path: '**',

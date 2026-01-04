@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { TableQueueService } from '../../core/services/table-queue.service';
+import { RestaurantDataService } from '../../shared/services/restaurant-data.service';
 import { Subscription, filter } from 'rxjs';
 
 @Component({
@@ -10,7 +11,7 @@ import { Subscription, filter } from 'rxjs';
 })
 export class RestaurantComponent implements OnInit, OnDestroy {
   restaurantId: string | null = null;
-  restaurant = {
+  restaurant: any = {
     name: 'The Gourmet Kitchen',
     cuisine: 'Italian, Continental',
     rating: 4.5,
@@ -19,11 +20,14 @@ export class RestaurantComponent implements OnInit, OnDestroy {
     status: 'Open',
     hours: '10:00 AM - 11:00 PM',
     description: 'Experience the finest Italian cuisine in the heart of New York. We offer a wide range of pasta, pizza, and fine wines.',
-    tags: ['Family Friendly', 'Outdoor Seating', 'Free Wi-Fi']
+    tags: ['Family Friendly', 'Outdoor Seating', 'Free Wi-Fi'],
+    themeColor: '#1976d2'
   };
 
   navLinks = [
     { path: 'tables', label: 'Tables', icon: 'table_restaurant', alwaysShow: true },
+    { path: 'menu', label: 'Menu', icon: 'restaurant_menu', alwaysShow: true },
+    { path: 'gallery', label: 'Gallery', icon: 'collections', alwaysShow: true },
     { path: 'queue', label: 'Join Queue', icon: 'queue', alwaysShow: false },
     { path: 'reservation', label: 'Reservations', icon: 'event', alwaysShow: true }
   ];
@@ -35,7 +39,8 @@ export class RestaurantComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private tableQueueService: TableQueueService
+    private tableQueueService: TableQueueService,
+    private restaurantDataService: RestaurantDataService
   ) { }
 
   ngOnInit(): void {
@@ -44,16 +49,30 @@ export class RestaurantComponent implements OnInit, OnDestroy {
       this.route.parent?.snapshot.paramMap.get('restaurantName') || null;
 
     if (this.restaurantId) {
-      // In a real app, fetch restaurant details using the name/ID
-      // For now, we just update the name to show it's working
-      // decoding URI component just in case
+      // Decode URI component
       const decodedName = decodeURIComponent(this.restaurantId);
 
-      // If the name is literally "restaurants" (due to routing fallback), ignore or redirect?
-      // Since we added explicit redirects in AppRouting, this shouldn't happen often,
-      // but good to keep "The Gourmet Kitchen" as default if it does.
+      // Fetch actual restaurant data from the service
       if (decodedName.toLowerCase() !== 'restaurants') {
-        this.restaurant.name = decodedName;
+        const restaurantData = this.restaurantDataService.getRestaurantByName(decodedName);
+
+        if (restaurantData) {
+          // Map the restaurant data to the component's restaurant object
+          this.restaurant = {
+            name: restaurantData.name,
+            cuisine: Array.isArray(restaurantData.cuisine) ? restaurantData.cuisine.join(', ') : restaurantData.cuisine,
+            rating: restaurantData.rating,
+            address: restaurantData.address,
+            image: restaurantData.image,
+            status: restaurantData.status === 'Low' ? 'Open' : restaurantData.status === 'Busy' ? 'Busy' : 'Open',
+            hours: restaurantData.openingHours || '10:00 AM - 11:00 PM',
+            description: restaurantData.description,
+            tags: restaurantData.specialties || ['Family Friendly', 'Outdoor Seating', 'Free Wi-Fi']
+          };
+        } else {
+          // Fallback: just update the name if restaurant not found in service
+          this.restaurant.name = decodedName;
+        }
       }
     }
 
@@ -71,6 +90,25 @@ export class RestaurantComponent implements OnInit, OnDestroy {
 
     // Initial check
     this.checkAndRedirectIfNeeded();
+
+    // Load custom configuration from Manager Dashboard
+    if (this.restaurantId) {
+      const savedConfig = localStorage.getItem(`config_${this.restaurantId}`);
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        this.restaurant = {
+          ...this.restaurant,
+          image: config.heroImage || this.restaurant.image,
+          description: config.description || this.restaurant.description,
+          address: config.address || this.restaurant.address,
+          themeColor: config.themeColor || this.restaurant.themeColor
+        };
+        // If tagline is used in template, add it
+        if (config.tagline) {
+          this.restaurant.cuisine = config.tagline; // Overwriting cuisine for now as tagline
+        }
+      }
+    }
   }
 
   ngOnDestroy(): void {

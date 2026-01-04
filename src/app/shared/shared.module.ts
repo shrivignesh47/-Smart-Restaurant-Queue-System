@@ -9,6 +9,7 @@ import { CustomerArrivalComponent } from './components/customer-arrival/customer
 import { JoinQueueDialogComponent } from './components/join-queue-dialog/join-queue-dialog.component';
 import { QueueStatusDialogComponent } from './components/queue-status-dialog/queue-status-dialog.component';
 import { LoginDialogComponent } from './components/login-dialog/login-dialog.component';
+import { RestaurantCardComponent } from './components/restaurant-card/restaurant-card.component';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { LoginDialogComponent } from './components/login-dialog/login-dialog.com
     CustomerArrivalComponent,
     JoinQueueDialogComponent,
     QueueStatusDialogComponent,
-    LoginDialogComponent
+    LoginDialogComponent,
+    RestaurantCardComponent
   ],
   imports: [
     CommonModule,
@@ -36,7 +38,8 @@ import { LoginDialogComponent } from './components/login-dialog/login-dialog.com
     CustomerArrivalComponent,
     JoinQueueDialogComponent,
     QueueStatusDialogComponent,
-    LoginDialogComponent
+    LoginDialogComponent,
+    RestaurantCardComponent
   ]
 })
 export class SharedModule { }

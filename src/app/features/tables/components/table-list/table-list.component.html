@@ -2,49 +2,94 @@
 
     <!-- My Bookings View -->
     <div *ngIf="!restaurantId && currentUser; else restaurantTables">
-        <h2 class="mb-4 text-2xl font-bold">My Booked Tables</h2>
+        <div class="my-bookings-header">
+            <h2>My Booked Tables</h2>
+            <p>Manage your restaurant table reservations</p>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="myBookings.length; else noBookings">
-            <mat-card *ngFor="let booking of myBookings" class="booking-card">
-                <mat-card-header>
-                    <mat-icon mat-card-avatar class="text-primary">restaurant</mat-icon>
-                    <mat-card-title>{{ booking.restaurantName }}</mat-card-title>
-                    <mat-card-subtitle>{{ booking.time }}</mat-card-subtitle>
-                </mat-card-header>
-                <mat-card-content class="mt-4">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-gray-600">Table:</span>
-                        <span class="font-bold">{{ booking.tableName }}</span>
-                    </div>
-                    <div class="flex justify-between mb-2">
-                        <span class="text-gray-600">Guests:</span>
-                        <span class="font-bold">{{ booking.guests }} People</span>
-                    </div>
-                    <div class="flex justify-between mb-2">
-                        <span class="text-gray-600">Ticket ID:</span>
-                        <span class="font-mono bg-gray-100 px-2 rounded">{{ booking.ticketId }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Status:</span>
-                        <span class="px-2 py-0.5 rounded text-sm"
-                            [ngClass]="booking.status === 'Confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'">
+        <div class="bookings-grid" *ngIf="myBookings.length; else noBookings">
+            <mat-card *ngFor="let booking of myBookings" class="booking-card-modern">
+                <!-- Restaurant Image Header -->
+                <div class="booking-card-image">
+                    <img [src]="'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80'"
+                        alt="{{ booking.restaurantName }}" class="restaurant-image">
+                    <div class="image-overlay">
+                        <span class="status-badge-modern"
+                            [ngClass]="booking.status === 'Confirmed' ? 'status-confirmed' : 'status-pending'">
+                            <mat-icon>{{ booking.status === 'Confirmed' ? 'check_circle' : 'schedule' }}</mat-icon>
                             {{ booking.status }}
                         </span>
                     </div>
+                </div>
+
+                <mat-card-content class="booking-content">
+                    <!-- Restaurant Name & Time -->
+                    <div class="booking-header">
+                        <h3 class="restaurant-name">{{ booking.restaurantName }}</h3>
+                        <div class="booking-time">
+                            <mat-icon>access_time</mat-icon>
+                            <span>{{ booking.time }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Booking Details Grid -->
+                    <div class="booking-details-grid">
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <mat-icon>table_restaurant</mat-icon>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Table</span>
+                                <span class="detail-value">{{ booking.tableName }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <mat-icon>people</mat-icon>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Guests</span>
+                                <span class="detail-value">{{ booking.guests }} People</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item detail-item-full">
+                            <div class="detail-icon">
+                                <mat-icon>confirmation_number</mat-icon>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Ticket ID</span>
+                                <span class="detail-value ticket-id">{{ booking.ticketId }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </mat-card-content>
-                <mat-card-actions align="end">
-                    <button mat-button color="primary">View Details</button>
-                    <button mat-button color="warn">Cancel</button>
+
+                <mat-card-actions class="booking-actions">
+                    <button mat-stroked-button color="primary" class="action-btn">
+                        <mat-icon>visibility</mat-icon>
+                        View Details
+                    </button>
+                    <button mat-stroked-button color="warn" class="action-btn">
+                        <mat-icon>cancel</mat-icon>
+                        Cancel
+                    </button>
                 </mat-card-actions>
             </mat-card>
         </div>
 
         <ng-template #noBookings>
-            <div class="text-center p-8 bg-gray-50 rounded-lg">
-                <mat-icon class="text-4xl text-gray-400 mb-2">table_restaurant</mat-icon>
-                <p>You haven't booked any tables yet.</p>
-                <button mat-raised-button color="primary" routerLink="/restaurants" class="mt-4">Find a
-                    Restaurant</button>
+            <div class="no-bookings-state">
+                <div class="no-bookings-icon">
+                    <mat-icon>table_restaurant</mat-icon>
+                </div>
+                <h3>No Bookings Yet</h3>
+                <p>You haven't booked any tables yet. Start exploring restaurants!</p>
+                <button mat-raised-button color="primary" routerLink="/restaurants" class="mt-4">
+                    <mat-icon>search</mat-icon>
+                    Find a Restaurant
+                </button>
             </div>
         </ng-template>
     </div>

@@ -7,43 +7,22 @@
 <section class="section restaurants-section">
     <div class="container">
         <div class="section-header flex justify-between items-center my-4">
-            <h2>Restaurants Near You</h2>
+            <h2>Popular Tamil Restaurants</h2>
 
             <mat-form-field appearance="outline" class="location-select">
                 <mat-label>Location</mat-label>
                 <mat-select value="city">
-                    <mat-option value="city">New York, NY</mat-option>
-                    <mat-option value="area">Los Angeles, CA</mat-option>
+                    <mat-option value="city">Chennai, Tamil Nadu</mat-option>
+                    <mat-option value="area">Coimbatore, Tamil Nadu</mat-option>
+                    <mat-option value="area">Madurai, Tamil Nadu</mat-option>
+                    <mat-option value="area">Salem, Tamil Nadu</mat-option>
                 </mat-select>
             </mat-form-field>
         </div>
 
         <div class="restaurant-grid">
-            <mat-card class="restaurant-card" *ngFor="let rest of restaurants">
-                <img mat-card-image [src]="rest.image" [alt]="rest.name">
-                <mat-card-content>
-                    <div class="flex justify-between items-center mt-2">
-                        <h3 class="mat-h3 mb-0">{{ rest.name }}</h3>
-                        <span class="rating-badge"><mat-icon class="star-icon">star</mat-icon> {{ rest.rating }}</span>
-                    </div>
-                    <div class="cuisine-tags">
-                        <span class="tag" *ngFor="let cuisine of rest.cuisine">{{ cuisine }}</span>
-                    </div>
-
-                    <div class="status-info flex justify-between mt-3">
-                        <div class="queue-status" [ngClass]="rest.status.toLowerCase()">
-                            <span class="dot"></span> {{ rest.status }} Queue
-                        </div>
-                        <div class="wait-time">
-                            <mat-icon inline>schedule</mat-icon> ~{{ rest.waitTime }}
-                        </div>
-                    </div>
-                </mat-card-content>
-                <mat-card-actions>
-                    <button mat-stroked-button color="primary" class="w-full" [routerLink]="['/', rest.name]">View
-                        Restaurant</button>
-                </mat-card-actions>
-            </mat-card>
+            <app-restaurant-card *ngFor="let rest of restaurants" [restaurant]="rest">
+            </app-restaurant-card>
         </div>
     </div>
 </section>
@@ -80,12 +59,13 @@
                     style="font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--primary-color); margin-bottom: 24px;">
                     About Smart Queue</h2>
                 <p style="font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 24px;">
-                    We are revolutionizing the dining experience by bridging the gap between hungry customers and
-                    bustling restaurants. Our platform empowers you to make smarter dining decisions.
+                    We are revolutionizing the Tamil dining experience by connecting food lovers with their favorite
+                    restaurants like Annapoorna, Anandhas, Gowrishankar, and HMR. Our platform empowers you to enjoy
+                    authentic South Indian cuisine without the wait.
                 </p>
                 <p style="font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 32px;">
-                    Founded with a mission to eliminate waiting times, we provide real-time updates and seamless booking
-                    experiences.
+                    Founded with a mission to eliminate waiting times at popular Tamil restaurants, we provide real-time
+                    queue updates and seamless table booking experiences for your favorite dining spots.
                 </p>
                 <button mat-raised-button color="primary" class="large-btn">Read Our Story</button>
             </div>
@@ -158,8 +138,9 @@
         <div class="icon-square large mx-auto">
             <mat-icon>groups</mat-icon>
         </div>
-        <h2>Ready to Transform Your Restaurant?</h2>
-        <p>Join hundreds of restaurants using TableFlow to streamline their operations and delight their customers.</p>
+        <h2>Ready to Transform Your Tamil Restaurant?</h2>
+        <p>Join popular Tamil restaurants like Annapoorna, Anandhas, Gowrishankar, and HMR using Smart Queue to
+            streamline operations and delight customers.</p>
     </div>
 </section>
 
