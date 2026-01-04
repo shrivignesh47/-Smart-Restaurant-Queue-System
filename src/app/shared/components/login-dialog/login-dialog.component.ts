@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login-dialog',
@@ -14,11 +15,13 @@ export class LoginDialogComponent implements OnInit, OnDestroy {
   isLoading = false;
   resendTimer = 0;
   private timerInterval?: any;
+  private otpToken: string = '';
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<LoginDialogComponent>,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
       phone: ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
@@ -48,16 +51,30 @@ export class LoginDialogComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const phone = this.loginForm.get('phone')?.value;
 
-    setTimeout(() => {
-      this.isLoading = false;
-      this.otpSent = true;
+    console.log('[LoginDialog] Sending OTP for:', phone);
 
-      this.loginForm.get('otp')?.setValidators([Validators.required, Validators.pattern(/^\d{6}$/)]);
-      this.loginForm.get('otp')?.updateValueAndValidity();
+    this.authService.sendOtp(phone).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.otpSent = true;
+        this.otpToken = res.otpToken;
 
-      this.snackBar.open(`OTP sent to +91 ${phone}`, 'Close', { duration: 3000 });
-      this.startResendTimer();
-    }, 1000);
+        this.loginForm.get('otp')?.setValidators([Validators.required, Validators.pattern(/^\d{6}$/)]);
+        this.loginForm.get('otp')?.updateValueAndValidity();
+
+        // Show OTP in snackbar for testing (remove in production)
+        const message = res.otp ? `OTP: ${res.otp}` : `OTP sent to +91 ${phone}`;
+        this.snackBar.open(message, 'Close', { duration: 5000 });
+
+        this.startResendTimer();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        const errMsg = err.error?.message || 'Failed to send OTP. Please try again.';
+        this.snackBar.open(errMsg, 'Close', { duration: 4000 });
+        console.error('[LoginDialog] Send OTP Error:', err);
+      }
+    });
   }
 
   verifyOTP(): void {
@@ -65,30 +82,32 @@ export class LoginDialogComponent implements OnInit, OnDestroy {
     const phone = this.loginForm.get('phone')?.value;
     const otp = this.loginForm.get('otp')?.value;
 
-    setTimeout(() => {
-      this.isLoading = false;
+    console.log('[LoginDialog] Verifying OTP for:', phone);
 
-      if (otp === '123456') {
-        const user = {
-          name: 'User',
-          phone: phone,
-          id: Date.now().toString()
-        };
-
-        localStorage.setItem('currentUser', JSON.stringify(user));
+    this.authService.verifyOtp(phone, otp, this.otpToken).subscribe({
+      next: (res) => {
+        this.isLoading = false;
 
         this.snackBar.open('Login successful!', 'Close', { duration: 2000 });
-        this.dialogRef.close({ success: true, user });
-      } else {
-        this.snackBar.open('Invalid OTP. Use 123456 for demo.', 'Close', { duration: 3000 });
+
+        // Close dialog and pass success
+        this.dialogRef.close({ success: true, user: res });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        const errMsg = err.error?.message || 'Invalid OTP. Please try again.';
+        this.snackBar.open(errMsg, 'Close', { duration: 4000 });
+        console.error('[LoginDialog] Verify OTP Error:', err);
       }
-    }, 1000);
+    });
   }
 
   resendOTP(): void {
     if (this.resendTimer > 0) return;
-    this.snackBar.open('OTP resent!', 'Close', { duration: 2000 });
-    this.startResendTimer();
+
+    // Reset OTP sent flag and resend
+    this.otpSent = false;
+    this.sendOTP();
   }
 
   startResendTimer(): void {
