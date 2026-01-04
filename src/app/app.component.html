@@ -1,7 +1,7 @@
 <div class="app-layout">
-  <app-header></app-header>
-  <main class="main-content">
+  <app-header *ngIf="showHeader"></app-header>
+  <main class="main-content" [class.no-header]="!showHeader">
     <router-outlet></router-outlet>
   </main>
-  <app-footer></app-footer>
+  <app-footer *ngIf="showHeader"></app-footer>
 </div>

@@ -10,4 +10,9 @@
   padding: 0;
   background-color: var(--bg-color);
   width: 100%;
+
+  &.no-header {
+    height: 100vh;
+    overflow: hidden;
+  }
 }

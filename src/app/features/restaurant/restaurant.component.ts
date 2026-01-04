@@ -20,11 +20,14 @@ export class RestaurantComponent implements OnInit, OnDestroy {
     status: 'Open',
     hours: '10:00 AM - 11:00 PM',
     description: 'Experience the finest Italian cuisine in the heart of New York. We offer a wide range of pasta, pizza, and fine wines.',
-    tags: ['Family Friendly', 'Outdoor Seating', 'Free Wi-Fi']
+    tags: ['Family Friendly', 'Outdoor Seating', 'Free Wi-Fi'],
+    themeColor: '#1976d2'
   };
 
   navLinks = [
     { path: 'tables', label: 'Tables', icon: 'table_restaurant', alwaysShow: true },
+    { path: 'menu', label: 'Menu', icon: 'restaurant_menu', alwaysShow: true },
+    { path: 'gallery', label: 'Gallery', icon: 'collections', alwaysShow: true },
     { path: 'queue', label: 'Join Queue', icon: 'queue', alwaysShow: false },
     { path: 'reservation', label: 'Reservations', icon: 'event', alwaysShow: true }
   ];
@@ -87,6 +90,25 @@ export class RestaurantComponent implements OnInit, OnDestroy {
 
     // Initial check
     this.checkAndRedirectIfNeeded();
+
+    // Load custom configuration from Manager Dashboard
+    if (this.restaurantId) {
+      const savedConfig = localStorage.getItem(`config_${this.restaurantId}`);
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        this.restaurant = {
+          ...this.restaurant,
+          image: config.heroImage || this.restaurant.image,
+          description: config.description || this.restaurant.description,
+          address: config.address || this.restaurant.address,
+          themeColor: config.themeColor || this.restaurant.themeColor
+        };
+        // If tagline is used in template, add it
+        if (config.tagline) {
+          this.restaurant.cuisine = config.tagline; // Overwriting cuisine for now as tagline
+        }
+      }
+    }
   }
 
   ngOnDestroy(): void {

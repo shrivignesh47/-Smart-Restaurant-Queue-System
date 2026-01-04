@@ -41,7 +41,7 @@
 
         <!-- Main Content Area -->
         <main class="main-area">
-            <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="primary" backgroundColor="primary">
+            <nav mat-tab-nav-bar [tabPanel]="tabPanel" [style.backgroundColor]="restaurant.themeColor">
                 <a mat-tab-link *ngFor="let link of visibleNavLinks" [routerLink]="link.path" routerLinkActive
                     #rla="routerLinkActive" [active]="rla.isActive">
                     <mat-icon class="mr-2">{{ link.icon }}</mat-icon> {{ link.label }}

@@ -3,104 +3,155 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #234C6A 0%, #142b37 100%);
+    background: #f4f7fe;
+    background-image: radial-gradient(#4318ff 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
     padding: 20px;
 }
 
 .login-card {
     background: white;
-    border-radius: 16px;
-    padding: 48px 40px;
-    max-width: 450px;
+    border-radius: 24px;
+    padding: 48px;
+    max-width: 480px;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 40px 80px rgba(67, 24, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .card-header {
     text-align: center;
-    margin-bottom: 32px;
-}
+    margin-bottom: 40px;
 
-.admin-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    color: var(--primary-color);
-    margin-bottom: 16px;
-}
+    .logo-box {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #4318ff, #707eff);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        box-shadow: 0 10px 20px rgba(67, 24, 255, 0.2);
 
-.card-header h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 8px;
-    color: #2d3748;
-}
+        mat-icon {
+            color: white;
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+        }
+    }
 
-.card-header p {
-    color: #718096;
-    margin: 0;
+    h1 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin: 0;
+        color: #1b2559;
+        letter-spacing: -1px;
+    }
+
+    p {
+        color: #707eae;
+        font-weight: 600;
+        margin-top: 8px;
+    }
 }
 
 .full-width {
     width: 100%;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .demo-credentials {
     display: flex;
     gap: 12px;
-    padding: 16px;
-    background: #fff3cd;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    border: 1px solid #ffeaa7;
-}
+    padding: 20px;
+    background: #fff9e6;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    border: 2px dashed #ffce20;
 
-.demo-credentials mat-icon {
-    color: #856404;
-    flex-shrink: 0;
-}
+    mat-icon {
+        color: #ffce20;
+        flex-shrink: 0;
+    }
 
-.demo-credentials div {
-    color: #856404;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
+    div {
+        color: #856404;
+        font-size: 0.95rem;
+        line-height: 1.6;
 
-.demo-credentials code {
-    background: #fff;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
+        strong {
+            font-weight: 700;
+            color: #1b2559;
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-family: 'DM Mono', monospace;
+        }
+    }
 }
 
 .login-btn {
     width: 100%;
-    height: 48px;
-    font-size: 1rem;
-    font-weight: 600;
+    height: 56px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 16px !important;
+    background: #4318ff !important;
+    box-shadow: 0 10px 20px rgba(67, 24, 255, 0.1) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(67, 24, 255, 0.2) !important;
+    }
 }
 
 .footer-links {
-    margin-top: 24px;
+    margin-top: 32px;
     text-align: center;
+
+    a {
+        color: #707eae;
+        font-weight: 700;
+        font-size: 0.95rem;
+        border-radius: 12px;
+
+        mat-icon {
+            margin-right: 8px;
+        }
+    }
 }
 
-::ng-deep .admin-login-container mat-spinner {
-    display: inline-block;
-    margin-right: 8px;
-}
+::ng-deep .admin-login-container {
+    .mat-mdc-form-field-flex {
+        background: #f4f7fe !important;
+        border-radius: 16px !important;
+        padding: 0 16px !important;
+    }
 
-::ng-deep .admin-login-container mat-spinner circle {
-    stroke: white !important;
+    .mat-mdc-text-field-wrapper {
+        background: transparent !important;
+    }
+
+    .mat-mdc-form-field-focus-indicator {
+        display: none;
+    }
 }
 
 @media (max-width: 480px) {
     .login-card {
         padding: 32px 24px;
-    }
-
-    .card-header h1 {
-        font-size: 1.5rem;
+        border-radius: 0;
+        height: 100vh;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 }
