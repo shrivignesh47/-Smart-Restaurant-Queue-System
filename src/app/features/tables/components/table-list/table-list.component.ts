@@ -44,6 +44,11 @@ export class TableListComponent implements OnInit {
       this.restaurantId = this.getRestaurantNameFromRoute();
     }
 
+    // Load restaurant-specific tables
+    if (this.restaurantId) {
+      this.tableQueueService.loadRestaurantTables(this.restaurantId);
+    }
+
     // Subscribe to tables
     this.tableQueueService.tables$.subscribe(tables => {
       this.tables = tables;

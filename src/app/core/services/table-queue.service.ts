@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { RestaurantDataService } from '../../shared/services/restaurant-data.service';
 
 export interface Table {
     id: number;
@@ -42,23 +43,23 @@ export interface Reservation {
     providedIn: 'root'
 })
 export class TableQueueService {
-    private tablesSubject = new BehaviorSubject<Table[]>([
-        { id: 1, name: 'Table 1', capacity: 2, status: 'Available', type: 'Indoor', features: ['Near Window', 'Quiet'] },
-        { id: 2, name: 'Table 2', capacity: 4, status: 'Occupied', type: 'Indoor', features: ['Booth', 'TV View'] },
-        { id: 3, name: 'Table 3', capacity: 6, status: 'Reserved', type: 'Window', features: ['Scenic View', 'Large'] },
-        { id: 4, name: 'Table 4', capacity: 2, status: 'Available', type: 'Outdoor', features: ['Smoking Area', 'Garden View'] },
-        { id: 5, name: 'Table 5', capacity: 4, status: 'Available', type: 'Outdoor', features: ['Heated', 'Umbrella'] },
-        { id: 6, name: 'Table 6', capacity: 8, status: 'Available', type: 'Indoor', features: ['Private Area', 'Round Table'] },
-    ]);
-
+    private tablesSubject = new BehaviorSubject<Table[]>([]);
     private queueSubject = new BehaviorSubject<QueueEntry[]>([]);
     private reservationsSubject = new BehaviorSubject<Reservation[]>([]);
+    private currentRestaurantId: string = '';
 
     tables$ = this.tablesSubject.asObservable();
     queue$ = this.queueSubject.asObservable();
     reservations$ = this.reservationsSubject.asObservable();
 
-    constructor() { }
+    constructor(private restaurantDataService: RestaurantDataService) { }
+
+    // Load tables for a specific restaurant
+    loadRestaurantTables(restaurantId: string) {
+        this.currentRestaurantId = restaurantId;
+        const tables = this.restaurantDataService.getRestaurantTables(restaurantId);
+        this.tablesSubject.next(tables);
+    }
 
     // Helper method for testing - makes all tables unavailable
     makeAllTablesUnavailable() {

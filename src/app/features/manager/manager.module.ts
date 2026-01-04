@@ -3,7 +3,16 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  // TODO: Add manager routes
+  {
+    path: '',
+    redirectTo: '/sysqueue/admin',
+    pathMatch: 'full'
+  },
+  {
+    path: 'tables',
+    redirectTo: '/tables',
+    pathMatch: 'full'
+  }
 ];
 
 @NgModule({

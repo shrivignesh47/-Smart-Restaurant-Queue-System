@@ -1,29 +1,58 @@
 <mat-toolbar color="primary" class="sticky-header">
-  <div class="container flex justify-between items-center w-full">
-    <span class="logo">SysQueue</span>
+  <div class="header-container container">
+    <div class="header-left">
+      <span class="logo" routerLink="/">SysQueue</span>
+    </div>
 
-    <div class="nav-links flex items-center gap-4">
-      <a mat-button routerLink="/">Home</a>
-      <a mat-button routerLink="/restaurants">Restaurants</a>
+    <!-- Desktop Navigation -->
+    <div class="nav-links desktop-only">
+      <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+      <a mat-button routerLink="/restaurants" routerLinkActive="active">Restaurants</a>
 
-      <!-- Logged In Menu -->
+      <ng-container *ngIf="currentUser; else guestDocLinks">
+        <a mat-button routerLink="/tables" routerLinkActive="active">My Tables</a>
+        <a mat-button routerLink="/reservation" routerLinkActive="active">Reservations</a>
+      </ng-container>
+
+      <ng-template #guestDocLinks>
+        <a mat-button routerLink="/partner" routerLinkActive="active">Partner With Us</a>
+      </ng-template>
+    </div>
+
+    <div class="header-right">
+      <!-- User Menu -->
       <ng-container *ngIf="currentUser; else loginBtn">
-        <a mat-button routerLink="/tables">My Tables</a>
-        <a mat-button routerLink="/reservation">My Reservations</a>
-
-        <button mat-button [matMenuTriggerFor]="profileMenu" class="profile-btn">
-          <div class="flex items-center gap-2">
-            <img [src]="currentUser.avatar || 'assets/images/hero1.png'"
-              class="w-8 h-8 rounded-full border border-gray-300">
-            <span>{{ currentUser.name }}</span>
-            <mat-icon>arrow_drop_down</mat-icon>
+        <button mat-button [matMenuTriggerFor]="profileMenu" class="profile-highlight-btn">
+          <div class="user-info">
+            <img
+              [src]="currentUser.avatar || 'https://ui-avatars.com/api/?name=' + currentUser.name + '&background=random'"
+              class="user-avatar" alt="User">
+            <span class="user-name desktop-only">{{ currentUser.name }}</span>
+            <mat-icon class="dropdown-icon">expand_more</mat-icon>
           </div>
         </button>
-        <mat-menu #profileMenu="matMenu">
+        <mat-menu #profileMenu="matMenu" class="modern-menu">
+          <div class="menu-header mobile-only">
+            <strong>{{ currentUser.name }}</strong>
+          </div>
           <button mat-menu-item routerLink="/profile">
-            <mat-icon>person</mat-icon>
+            <mat-icon>person_outline</mat-icon>
             <span>Profile</span>
           </button>
+
+          <!-- Mobile only links inside profile menu for better UX -->
+          <div class="mobile-only">
+            <button mat-menu-item routerLink="/tables">
+              <mat-icon>restaurant_menu</mat-icon>
+              <span>My Tables</span>
+            </button>
+            <button mat-menu-item routerLink="/reservation">
+              <mat-icon>event_available</mat-icon>
+              <span>Reservations</span>
+            </button>
+          </div>
+
+          <mat-divider></mat-divider>
           <button mat-menu-item (click)="logout()">
             <mat-icon>logout</mat-icon>
             <span>Logout</span>
@@ -31,13 +60,33 @@
         </mat-menu>
       </ng-container>
 
-      <!-- Guest -->
       <ng-template #loginBtn>
-        <a mat-button routerLink="/partner">Partner With Us</a>
-        <button mat-flat-button color="accent" (click)="openLoginDialog()">
-          <mat-icon>login</mat-icon> Login
+        <button mat-flat-button color="accent" class="login-pill" (click)="openLoginDialog()">
+          <mat-icon>login</mat-icon>
+          <span>Login</span>
         </button>
       </ng-template>
+
+      <!-- Mobile Menu Button -->
+      <button mat-icon-button [matMenuTriggerFor]="mobileMenu" class="mobile-only menu-toggle">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <mat-menu #mobileMenu="matMenu" class="modern-menu">
+        <button mat-menu-item routerLink="/">
+          <mat-icon>home</mat-icon>
+          <span>Home</span>
+        </button>
+        <button mat-menu-item routerLink="/restaurants">
+          <mat-icon>explore</mat-icon>
+          <span>Restaurants</span>
+        </button>
+        <ng-container *ngIf="!currentUser">
+          <button mat-menu-item routerLink="/partner">
+            <mat-icon>handshake</mat-icon>
+            <span>Partner With Us</span>
+          </button>
+        </ng-container>
+      </mat-menu>
     </div>
   </div>
 </mat-toolbar>
