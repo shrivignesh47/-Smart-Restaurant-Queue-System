@@ -1,101 +1,7 @@
 <div class="tables-container">
 
-    <!-- My Bookings View -->
-    <div *ngIf="!restaurantId && currentUser; else restaurantTables">
-        <div class="my-bookings-header">
-            <h2>My Booked Tables</h2>
-            <p>Manage your restaurant table reservations</p>
-        </div>
-
-        <div class="bookings-grid" *ngIf="myBookings.length; else noBookings">
-            <mat-card *ngFor="let booking of myBookings" class="booking-card-modern">
-                <!-- Restaurant Image Header -->
-                <div class="booking-card-image">
-                    <img [src]="'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80'"
-                        alt="{{ booking.restaurantName }}" class="restaurant-image">
-                    <div class="image-overlay">
-                        <span class="status-badge-modern"
-                            [ngClass]="booking.status === 'Confirmed' ? 'status-confirmed' : 'status-pending'">
-                            <mat-icon>{{ booking.status === 'Confirmed' ? 'check_circle' : 'schedule' }}</mat-icon>
-                            {{ booking.status }}
-                        </span>
-                    </div>
-                </div>
-
-                <mat-card-content class="booking-content">
-                    <!-- Restaurant Name & Time -->
-                    <div class="booking-header">
-                        <h3 class="restaurant-name">{{ booking.restaurantName }}</h3>
-                        <div class="booking-time">
-                            <mat-icon>access_time</mat-icon>
-                            <span>{{ booking.time }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Booking Details Grid -->
-                    <div class="booking-details-grid">
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <mat-icon>table_restaurant</mat-icon>
-                            </div>
-                            <div class="detail-content">
-                                <span class="detail-label">Table</span>
-                                <span class="detail-value">{{ booking.tableName }}</span>
-                            </div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <mat-icon>people</mat-icon>
-                            </div>
-                            <div class="detail-content">
-                                <span class="detail-label">Guests</span>
-                                <span class="detail-value">{{ booking.guests }} People</span>
-                            </div>
-                        </div>
-
-                        <div class="detail-item detail-item-full">
-                            <div class="detail-icon">
-                                <mat-icon>confirmation_number</mat-icon>
-                            </div>
-                            <div class="detail-content">
-                                <span class="detail-label">Ticket ID</span>
-                                <span class="detail-value ticket-id">{{ booking.ticketId }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </mat-card-content>
-
-                <mat-card-actions class="booking-actions">
-                    <button mat-stroked-button color="primary" class="action-btn">
-                        <mat-icon>visibility</mat-icon>
-                        View Details
-                    </button>
-                    <button mat-stroked-button color="warn" class="action-btn">
-                        <mat-icon>cancel</mat-icon>
-                        Cancel
-                    </button>
-                </mat-card-actions>
-            </mat-card>
-        </div>
-
-        <ng-template #noBookings>
-            <div class="no-bookings-state">
-                <div class="no-bookings-icon">
-                    <mat-icon>table_restaurant</mat-icon>
-                </div>
-                <h3>No Bookings Yet</h3>
-                <p>You haven't booked any tables yet. Start exploring restaurants!</p>
-                <button mat-raised-button color="primary" routerLink="/restaurants" class="mt-4">
-                    <mat-icon>search</mat-icon>
-                    Find a Restaurant
-                </button>
-            </div>
-        </ng-template>
-    </div>
-
     <!-- Restaurant Tables View -->
-    <ng-template #restaurantTables>
+    <div *ngIf="restaurantId; else noRestaurant">
 
         <!-- Availability Check Section -->
         <div
@@ -121,24 +27,35 @@
                 <button mat-raised-button color="primary" (click)="checkAvailabilityOnArrival()" style="height: 56px;">
                     <mat-icon>check_circle</mat-icon> Check Availability
                 </button>
+                <button mat-raised-button color="accent" (click)="joinGeneralQueue()" style="height: 56px;">
+                    <mat-icon>queue</mat-icon> Join General Queue
+                </button>
             </div>
-            <p class="text-sm text-gray-600 mt-2">
-                <mat-icon inline style="font-size: 16px; vertical-align: middle;">info</mat-icon>
-                We'll show you available tables or suggest joining the queue if tables are full.
-            </p>
+        </div>
+
+        <!-- General Queue Status -->
+        <div *ngIf="generalQueueEntryId"
+            class="mb-4 p-4 bg-purple-100 border border-purple-400 text-purple-700 rounded flex justify-between items-center">
+            <div>
+                <p class="font-bold flex items-center gap-2">
+                    <mat-icon>schedule</mat-icon>
+                    You are in the General Queue
+                </p>
+                <p class="text-sm mt-1">
+                    Position: <strong>#{{ getGeneralQueuePosition() }}</strong> |
+                    Est. Wait: <strong>~{{ getGeneralQueueWaitTime() }} min</strong>
+                </p>
+            </div>
+            <button mat-flat-button color="accent" (click)="viewGeneralQueueStatus()">
+                View My Ticket
+            </button>
         </div>
 
         <!-- All Full Warning -->
-        <div *ngIf="isAllFull"
-            class="full-warning mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded flex justify-between items-center">
-            <div>
-                <p class="font-bold mb-1">All Tables Currently Full</p>
-                <p class="text-sm">No tables available for {{ partySize }} {{ partySize === 1 ? 'person' : 'people' }}.
-                    Join the queue to be notified when a table is ready.</p>
-            </div>
-            <button mat-raised-button color="warn" (click)="joinGeneralQueue()">
-                <mat-icon>queue</mat-icon> Join Queue
-            </button>
+        <div *ngIf="isAllFull" class="full-warning mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <p class="font-bold mb-1">All Tables Currently Full</p>
+            <p class="text-sm">No tables available for {{ partySize }} {{ partySize === 1 ? 'person' : 'people' }}.
+                Please join the general queue above to be seated when a table becomes free.</p>
         </div>
 
         <!-- Available Tables Info -->
@@ -146,10 +63,11 @@
             class="success-banner mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
             <p class="font-bold flex items-center gap-2">
                 <mat-icon>check_circle</mat-icon>
-                Great News! {{ availableTablesCount }} {{ availableTablesCount === 1 ? 'table is' : 'tables are' }}
-                available
+                {{ availableTablesCount }} {{ availableTablesCount === 1 ? 'table is' : 'tables are' }}
+                currently available
             </p>
-            <p class="text-sm mt-1">You can book a table immediately below.</p>
+            <p class="text-sm mt-1">If you're not seeing a specific table you want, join the queue and we'll assign you
+                the best available spot.</p>
         </div>
 
         <div class="flex justify-between items-center mb-4">
@@ -175,9 +93,12 @@
                 </div>
 
                 <div class="table-info">
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 8px;">
+                        <span class="type-badge" *ngIf="table.type">{{ table.type }}</span>
+                        <span class="status-badge">{{ table.status }}</span>
+                    </div>
                     <h4>{{ table.name }}</h4>
                     <p class="capacity"><mat-icon inline>people</mat-icon> {{ table.capacity }} Seats</p>
-                    <span class="status-badge">{{ table.status }}</span>
 
                     <!-- My Booking Info (if I booked this table) -->
                     <div *ngIf="isMyBooking(table)"
@@ -217,45 +138,52 @@
                         </button>
                     </div>
                 </div>
-                <div class="actions mt-3 w-full">
-                    <!-- Show different button based on user's status with this table -->
-                    <ng-container *ngIf="isMyBooking(table); else notMyBooking">
-                        <!-- User has booked this table - show manage booking button -->
-                        <button mat-flat-button color="primary" class="w-full">
-                            <mat-icon>event_note</mat-icon> Manage Booking
-                        </button>
-                    </ng-container>
+                <div class="actions mt-3 w-full" *ngIf="isMyBooking(table)">
+                    <button mat-flat-button color="primary" class="w-full">
+                        <mat-icon>event_note</mat-icon> Manage Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <ng-template #notMyBooking>
-                        <!-- User hasn't booked this table - show book or join queue -->
-                        <button mat-flat-button [color]="table.status === 'Available' ? 'primary' : 'warn'"
-                            class="w-full" (click)="handleTableAction(table)">
-                            {{ table.status === 'Available' ? 'Book' : 'Join Queue' }}
-                        </button>
-                    </ng-template>
+    <!-- Redirection for global /tables route -->
+    <ng-template #noRestaurant>
+        <div class="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
+            <div class="bg-white p-12 rounded-3xl shadow-xl border border-gray-100 max-w-lg">
+                <mat-icon class="text-indigo-600 mb-6"
+                    style="font-size: 80px; width: 80px; height: 80px;">auto_awesome</mat-icon>
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Reservations & History</h2>
+                <p class="text-gray-600 text-lg mb-8">We've moved table bookings and group reservations to a new home
+                    for a better experience.</p>
+
+                <button mat-flat-button color="primary" routerLink="/reservation"
+                    style="padding: 12px 32px; font-size: 1.1rem; border-radius: 50px; background: #4318ff;">
+                    View My Reservations
+                </button>
+
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                    <p class="text-sm text-gray-400">Looking for a specific restaurant? <a routerLink="/restaurants"
+                            class="text-indigo-600 font-bold">Browse Restaurants</a></p>
                 </div>
             </div>
         </div>
     </ng-template>
-</div>
 
-<!-- Info Dialog Template -->
-<ng-template #infoDialog>
-    <h2 mat-dialog-title>{{ selectedTable?.name }} Info</h2>
-    <mat-dialog-content>
-        <div class="info-content">
-            <p><strong>Type:</strong> {{ selectedTable?.type }}</p>
-            <p><strong>Capacity:</strong> {{ selectedTable?.capacity }} people</p>
-            <p><strong>Features:</strong></p>
-            <ul>
-                <li *ngFor="let feature of selectedTable?.features">{{ feature }}</li>
-            </ul>
-        </div>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close>Close</button>
-        <button mat-flat-button color="primary" [mat-dialog-close]="true" (click)="handleTableAction(selectedTable)">
-            {{ selectedTable?.status === 'Available' ? 'Book Now' : 'Join Queue' }}
-        </button>
-    </mat-dialog-actions>
-</ng-template>
+    <!-- Info Dialog Template -->
+    <ng-template #infoDialog>
+        <h2 mat-dialog-title>{{ selectedTable?.name }} Info</h2>
+        <mat-dialog-content>
+            <div class="info-content">
+                <p><strong>Type:</strong> {{ selectedTable?.type }}</p>
+                <p><strong>Capacity:</strong> {{ selectedTable?.capacity }} people</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li *ngFor="let feature of selectedTable?.features">{{ feature }}</li>
+                </ul>
+            </div>
+        </mat-dialog-content>
+        <mat-dialog-actions align="end">
+            <button mat-button mat-dialog-close>Close</button>
+        </mat-dialog-actions>
+    </ng-template>

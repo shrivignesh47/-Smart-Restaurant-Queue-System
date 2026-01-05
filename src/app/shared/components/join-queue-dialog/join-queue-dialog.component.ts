@@ -19,10 +19,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
         </p>
       </div>
 
-      <div *ngIf="!data.tableSpecific" class="general-info mb-4 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
+      <div *ngIf="!data.tableSpecific" class="general-info mb-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
         <p class="text-sm text-gray-700">
-          <mat-icon inline style="font-size: 18px; vertical-align: middle; color: #f59e0b;">info</mat-icon>
-          No tables are currently available. Join the general queue and we'll notify you when any table becomes available.
+          <mat-icon inline style="font-size: 18px; vertical-align: middle; color: var(--primary-color);">info</mat-icon>
+          Join the general queue. Managers will assign you to the next best available table based on your party size.
         </p>
       </div>
 

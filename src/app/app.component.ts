@@ -20,7 +20,9 @@ export class AppComponent implements OnInit {
       const url = event.urlAfterRedirects || event.url;
       // Hide header for admin and manager routes
       this.showHeader = !url.includes('/sysqueue/admin') &&
-        !url.includes('/manager') && !url.includes('/admin/dashboard');
+        !url.includes('/manager') &&
+        !url.includes('/admin/dashboard') &&
+        !url.includes('/scanner');
     });
   }
 }

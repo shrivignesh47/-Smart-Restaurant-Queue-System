@@ -22,12 +22,33 @@ verifyToken = (req, res, next) => {
         }
         req.userId = decoded.id;
         req.userRole = decoded.role;
+        req.restaurantId = decoded.restaurant_id;
         next();
     });
 };
 
+isAdmin = (req, res, next) => {
+    if (req.userRole !== "Admin") {
+        return res.status(403).send({
+            message: "Require Admin Role!"
+        });
+    }
+    next();
+};
+
+isRestaurantAdmin = (req, res, next) => {
+    if (req.userRole !== "Admin" && req.userRole !== "RestaurantAdmin") {
+        return res.status(403).send({
+            message: "Require Restaurant Admin Role!"
+        });
+    }
+    next();
+};
+
 const authJwt = {
-    verifyToken: verifyToken
+    verifyToken: verifyToken,
+    isAdmin: isAdmin,
+    isRestaurantAdmin: isRestaurantAdmin
 };
 
 module.exports = authJwt;

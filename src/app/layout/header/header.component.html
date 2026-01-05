@@ -10,7 +10,6 @@
       <a mat-button routerLink="/restaurants" routerLinkActive="active">Restaurants</a>
 
       <ng-container *ngIf="currentUser; else guestDocLinks">
-        <a mat-button routerLink="/tables" routerLinkActive="active">My Tables</a>
         <a mat-button routerLink="/reservation" routerLinkActive="active">Reservations</a>
       </ng-container>
 
@@ -42,10 +41,6 @@
 
           <!-- Mobile only links inside profile menu for better UX -->
           <div class="mobile-only">
-            <button mat-menu-item routerLink="/tables">
-              <mat-icon>restaurant_menu</mat-icon>
-              <span>My Tables</span>
-            </button>
             <button mat-menu-item routerLink="/reservation">
               <mat-icon>event_available</mat-icon>
               <span>Reservations</span>

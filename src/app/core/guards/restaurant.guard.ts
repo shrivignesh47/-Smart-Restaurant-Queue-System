@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
-import { RestaurantDataService } from '../../shared/services/restaurant-data.service';
+import { Observable, map, catchError, of } from 'rxjs';
+import { RestaurantService } from '../services/restaurant.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,7 @@ import { RestaurantDataService } from '../../shared/services/restaurant-data.ser
 export class RestaurantGuard implements CanActivate {
 
   constructor(
-    private restaurantDataService: RestaurantDataService,
+    private restaurantService: RestaurantService,
     private router: Router
   ) { }
 
@@ -23,24 +23,19 @@ export class RestaurantGuard implements CanActivate {
       return this.router.createUrlTree(['/restaurants']);
     }
 
-    // Check if restaurant exists in our data
-    const restaurant = this.restaurantDataService.getRestaurantById(restaurantName.toLowerCase());
-
-    if (!restaurant) {
-      // Also try to find by name (case-insensitive)
-      const allRestaurants = this.restaurantDataService.getAllRestaurants();
-      const foundByName = allRestaurants.find(r =>
-        r.name.toLowerCase() === restaurantName.toLowerCase() ||
-        r.name.toLowerCase().replace(/\s+/g, '-') === restaurantName.toLowerCase()
-      );
-
-      if (!foundByName) {
-        // Restaurant not found, redirect to restaurants list
-        console.warn(`Restaurant "${restaurantName}" not found. Redirecting to restaurants page.`);
-        return this.router.createUrlTree(['/restaurants']);
-      }
-    }
-
-    return true;
+    return this.restaurantService.getBySlug(restaurantName).pipe(
+      map(restaurant => {
+        if (restaurant) {
+          return true;
+        } else {
+          this.router.navigate(['/restaurants']);
+          return false;
+        }
+      }),
+      catchError((err) => {
+        console.error('Restaurant not found:', err);
+        return of(this.router.createUrlTree(['/restaurants']));
+      })
+    );
   }
 }

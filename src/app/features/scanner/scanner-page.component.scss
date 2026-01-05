@@ -1,0 +1,828 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap');
+
+:host {
+    display: block;
+    height: 100vh;
+    width: 100vw;
+    font-family: 'Outfit', sans-serif;
+    color: #e2e8f0;
+    overflow: hidden;
+}
+
+$theme-color: #234c6a;
+$bg-color: #0b1116;
+$card-bg: #16202a;
+$text-muted: #94a3b8;
+
+.scanner-app {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background: $bg-color;
+}
+
+/* ==================
+   Loading Screen
+   ================== */
+.loading-screen {
+    position: absolute;
+    inset: 0;
+    background: $bg-color;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1000;
+    color: white;
+
+    p {
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        opacity: 0.7;
+    }
+}
+
+/* ==================
+   Auth Screen
+   ================== */
+.auth-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    background: $bg-color;
+    z-index: 100;
+
+    .auth-content {
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        animation: fadeIn 0.4s ease-out;
+
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            background: $theme-color;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 20px -5px rgba(35, 76, 106, 0.5);
+
+            mat-icon {
+                font-size: 30px;
+                width: 30px;
+                height: 30px;
+                color: white;
+            }
+        }
+
+        h1 {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: $text-muted;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .auth-form {
+            background: $card-bg;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .input-wrapper {
+            margin-bottom: 1rem;
+
+            input {
+                width: 100%;
+                padding: 0 1rem;
+                height: 48px;
+                box-sizing: border-box;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(0, 0, 0, 0.2);
+                color: white;
+                font-size: 1.1rem;
+                text-align: center;
+                transition: all 0.2s;
+                font-family: 'Outfit', sans-serif;
+                letter-spacing: 3px;
+
+                &:focus {
+                    outline: none;
+                    border-color: $theme-color;
+                    background: rgba(0, 0, 0, 0.3);
+                }
+
+                &::placeholder {
+                    color: #556;
+                    letter-spacing: normal;
+                    font-size: 0.9rem;
+                }
+            }
+        }
+
+        .auth-btn {
+            width: 100%;
+            height: 48px;
+            border-radius: 10px;
+            border: none;
+            background: $theme-color;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                background: lighten($theme-color, 5%);
+                transform: translateY(-1px);
+            }
+        }
+
+        .hint {
+            margin-top: 1.5rem;
+            color: #556;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+    }
+}
+
+/* ==================
+   Scanner Interface
+   ================== */
+.scanner-interface {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    /* Header */
+    .scanner-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 50;
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(35, 76, 106, 0.8);
+            padding: 6px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+
+            span {
+                color: white;
+                font-size: 0.8rem;
+                font-weight: 500;
+            }
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+
+            mat-icon {
+                font-size: 16px;
+                width: 16px;
+                height: 16px;
+            }
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+        }
+    }
+
+    /* Main Viewport Wrapper - Compact Mode */
+    .scanner-container-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        margin-top: 40px; // Offset for header
+
+        // The card containing the scanner
+        .scanner-card {
+            width: 100%;
+            max-width: 320px;
+            height: 320px; // Square-ish aspect ratio
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            background: black;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+            border: 4px solid $card-bg;
+            display: flex;
+            flex-direction: column;
+
+            .viewport {
+                flex: 1;
+                position: relative;
+                overflow: hidden;
+
+                zxing-scanner {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+
+                    video {
+                        object-fit: cover;
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+
+                .error-slate {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    color: $text-muted;
+                    gap: 1rem;
+                    text-align: center;
+
+                    mat-icon {
+                        font-size: 32px;
+                        width: 32px;
+                        height: 32px;
+                        opacity: 0.5;
+                    }
+                }
+
+                .scan-frame-container {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    pointer-events: none;
+
+                    .scan-box {
+                        width: 180px;
+                        height: 180px;
+                        position: relative;
+
+                        .corner {
+                            position: absolute;
+                            width: 20px;
+                            height: 20px;
+                            border: 3px solid rgba(255, 255, 255, 0.8);
+                            border-radius: 4px;
+                        }
+
+                        .tl {
+                            top: 0;
+                            left: 0;
+                            border-width: 3px 0 0 3px;
+                            border-radius: 8px 0 0 0;
+                        }
+
+                        .tr {
+                            top: 0;
+                            right: 0;
+                            border-width: 3px 3px 0 0;
+                            border-radius: 0 8px 0 0;
+                        }
+
+                        .bl {
+                            bottom: 0;
+                            left: 0;
+                            border-width: 0 0 3px 3px;
+                            border-radius: 0 0 0 8px;
+                        }
+
+                        .br {
+                            bottom: 0;
+                            right: 0;
+                            border-width: 0 3px 3px 0;
+                            border-radius: 0 0 8px 0;
+                        }
+
+                        .scan-line {
+                            position: absolute;
+                            left: 5px;
+                            right: 5px;
+                            height: 2px;
+                            background: #4ade80;
+                            box-shadow: 0 0 10px #4ade80;
+                            animation: scan-move 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                        }
+                    }
+                }
+            }
+
+            .scanner-instruction {
+                background: #000;
+                color: $text-muted;
+                text-align: center;
+                padding: 12px;
+                font-size: 0.8rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .result-toast {
+            position: absolute;
+            bottom: 100px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: 0.3s;
+            opacity: 0;
+            z-index: 200;
+
+            &.active {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+
+            .toast-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+
+                .success {
+                    color: #10b981;
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                }
+
+                .message {
+                    color: #1e293b;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                }
+            }
+        }
+    }
+
+
+    /* Bottom Bar */
+    .bottom-bar {
+        background: $bg-color;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        z-index: 60;
+        height: 70px;
+        box-sizing: border-box;
+
+        .view-toggle {
+            background: $theme-color;
+            color: white;
+            border: none;
+            padding: 0 16px;
+            height: 40px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            &:active {
+                transform: scale(0.98);
+            }
+        }
+
+        .cam-switch-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+    }
+}
+
+/* ==================
+   List View Interface
+   ================== */
+.list-view-interface {
+    flex: 1;
+    background: $bg-color;
+    display: flex;
+    flex-direction: column;
+    padding-top: 70px;
+    padding-bottom: 20px;
+    overflow-y: auto;
+    width: 100%;
+
+    .section-title {
+        color: $text-muted;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0 1.5rem;
+        margin-bottom: 0.75rem;
+        margin-top: 1.5rem;
+        position: sticky;
+        top: 0;
+        background: $bg-color;
+        z-index: 10;
+        padding-top: 1rem;
+        padding-bottom: 0.5rem;
+        opacity: 0.8;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    .guest-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0 1.5rem;
+        margin-bottom: 1rem;
+
+        .guest-card {
+            background: $card-bg;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+
+            .guest-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                flex: 1;
+
+                h4 {
+                    color: white;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    margin: 0;
+                }
+
+                .meta {
+                    color: $text-muted;
+                    font-size: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    flex-wrap: wrap;
+
+                    .separator {
+                        width: 3px;
+                        height: 3px;
+                        background: #556;
+                        border-radius: 50%;
+                    }
+                }
+
+                .details {
+                    margin-top: 6px;
+                    font-size: 0.75rem;
+                    color: #9ab;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+
+                    .detail-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+
+                        mat-icon {
+                            font-size: 14px;
+                            width: 14px;
+                            height: 14px;
+                            opacity: 0.7;
+                        }
+                    }
+                }
+            }
+
+            .seat-action-btn {
+                background: #234c6a;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-left: 10px;
+                white-space: nowrap;
+                transition: all 0.2s;
+
+                mat-icon {
+                    font-size: 16px;
+                    width: 16px;
+                    height: 16px;
+                }
+
+                &:active {
+                    transform: scale(0.95);
+                }
+
+                &:hover {
+                    background: lighten(#234c6a, 10%);
+                }
+            }
+
+            .badge {
+                padding: 4px 8px;
+                border-radius: 6px;
+                font-size: 0.7rem;
+                font-weight: 600;
+                margin-left: 0; // Reset margin as it is in flex container now
+                white-space: nowrap;
+                text-align: center;
+                min-width: 70px;
+
+                &.confirmed {
+                    background: rgba(16, 185, 129, 0.15);
+                    color: #34d399; // Green for confirmed
+                }
+
+                &.pending {
+                    background: rgba(245, 158, 11, 0.15);
+                    color: #fbbf24; // Amber for pending
+                }
+
+                &.seated {
+                    background: rgba(59, 130, 246, 0.15);
+                    color: #60a5fa;
+                }
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: $text-muted;
+            padding: 2rem 1rem;
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+    }
+}
+
+@keyframes scan-move {
+    0% {
+        top: 5px;
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 175px;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .scanner-interface .scanner-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .scanner-interface .bottom-bar {
+        padding: 0.75rem 1rem;
+    }
+
+    .list-view-interface {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .list-view-interface .guest-list {
+        padding: 0 1rem;
+    }
+}
+
+/* Scanned Reservation Overlay */
+.scanned-details-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    animation: fadeIn 0.3s ease-out;
+
+    .overlay-card {
+        background: white;
+        width: 90%;
+        max-width: 400px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        color: #1e293b;
+
+        .overlay-header {
+            background: #f1f5f9;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+
+            .icon {
+                color: #234c6a;
+            }
+
+            h3 {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 700;
+                color: #0f172a;
+            }
+        }
+
+        .overlay-content {
+            padding: 1.25rem;
+
+            .detail-group {
+                margin-bottom: 1rem;
+
+                label {
+                    display: block;
+                    font-size: 0.7rem;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    font-weight: 700;
+                    margin-bottom: 0.25rem;
+                }
+
+                .name {
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    margin: 0;
+                    line-height: 1.2;
+                }
+            }
+
+            .kv-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+                margin-bottom: 1rem;
+
+                .kv-item {
+                    label {
+                        display: block;
+                        font-size: 0.65rem;
+                        color: #64748b;
+                        font-weight: 700;
+                        margin-bottom: 0.1rem;
+                    }
+
+                    p {
+                        margin: 0;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                    }
+                }
+            }
+
+            .status-badge {
+                display: inline-block;
+                padding: 0.25rem 0.5rem;
+                background: #f1f5f9;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 600;
+
+                &.confirmed {
+                    background: #dcfce7;
+                    color: #166534;
+                }
+            }
+        }
+
+        .overlay-actions {
+            padding: 1rem;
+            background: #f8fafc;
+            display: flex;
+            gap: 0.75rem;
+
+            button {
+                flex: 1;
+                height: 44px;
+                border: none;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                transition: all 0.2s;
+
+                &:active {
+                    transform: scale(0.96);
+                }
+            }
+
+            .cancel-btn {
+                background: white;
+                border: 1px solid #cbd5e1;
+                color: #64748b;
+
+                &:hover {
+                    background: #f1f5f9;
+                }
+            }
+
+            .seat-btn {
+                background: #234c6a;
+                color: white;
+
+                mat-icon {
+                    font-size: 18px;
+                    width: 18px;
+                    height: 18px;
+                }
+
+                &:hover {
+                    background: lighten(#234c6a, 5%);
+                }
+            }
+        }
+    }
+}

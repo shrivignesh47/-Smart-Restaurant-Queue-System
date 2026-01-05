@@ -2,11 +2,11 @@ import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BookingDialogComponent } from '../../../../shared/components/booking-dialog/booking-dialog.component';
 import { JoinQueueDialogComponent } from '../../../../shared/components/join-queue-dialog/join-queue-dialog.component';
 import { QueueStatusDialogComponent } from '../../../../shared/components/queue-status-dialog/queue-status-dialog.component';
 import { AuthService } from '../../../../core/auth.service';
 import { TableQueueService, Table } from '../../../../core/services/table-queue.service';
+import { RestaurantService, Restaurant } from '../../../../core/services/restaurant.service';
 
 @Component({
   selector: 'app-table-list',
@@ -27,6 +27,7 @@ export class TableListComponent implements OnInit {
   // Track user's bookings and queue entries
   myBookedTables: Set<number> = new Set();
   myQueueEntries: Map<number, string> = new Map(); // tableId -> queueId
+  generalQueueEntryId: string | null = null;
   private queueSubscription?: any;
 
   constructor(
@@ -35,7 +36,8 @@ export class TableListComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private authService: AuthService,
-    private tableQueueService: TableQueueService
+    private tableQueueService: TableQueueService,
+    private restaurantService: RestaurantService
   ) { }
 
   ngOnInit(): void {
@@ -46,7 +48,12 @@ export class TableListComponent implements OnInit {
 
     // Load restaurant-specific tables
     if (this.restaurantId) {
-      this.tableQueueService.loadRestaurantTables(this.restaurantId);
+      // Find restaurant object to get numeric ID
+      this.restaurantService.getBySlug(this.restaurantId).subscribe(res => {
+        if (res && res.id) {
+          this.tableQueueService.loadTables(res.id).subscribe();
+        }
+      });
     }
 
     // Subscribe to tables
@@ -89,9 +96,9 @@ export class TableListComponent implements OnInit {
   checkAvailabilityOnArrival() {
     const result = this.tableQueueService.checkAvailabilityAndSuggest(this.partySize);
 
-    if (result.hasAvailable) {
+    if (result.length > 0) {
       this.snackBar.open(
-        `Great news! We have ${result.availableTables?.length} table(s) available for ${this.partySize} ${this.partySize === 1 ? 'guest' : 'guests'}.`,
+        `Great news! We have ${result.length} table(s) available for ${this.partySize} ${this.partySize === 1 ? 'guest' : 'guests'}.`,
         'OK',
         { duration: 5000, panelClass: ['success-snackbar'] }
       );
@@ -136,48 +143,9 @@ export class TableListComponent implements OnInit {
   }
 
   handleTableAction(table: Table) {
-    if (table.status === 'Available') {
-      this.bookTable(table);
-    } else {
-      this.promptJoinQueue(table);
-    }
+    this.promptJoinQueue(table);
   }
 
-  bookTable(table: Table) {
-    const dialogRef = this.dialog.open(BookingDialogComponent, {
-      width: '400px',
-      data: { tableName: table.name, tableId: table.id }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const bookingResult = this.tableQueueService.bookTable(
-          table.id,
-          result.name,
-          result.partySize || 2
-        );
-
-        if (bookingResult.success) {
-          // Track this booking
-          this.myBookedTables.add(table.id);
-
-          this.snackBar.open(
-            `Success! Booked ${table.name} for ${result.name} (Ticket: ${bookingResult.ticketId})`,
-            'Close',
-            {
-              duration: 5000,
-              panelClass: ['success-snackbar']
-            }
-          );
-        } else {
-          this.snackBar.open(bookingResult.message, 'Close', {
-            duration: 3000,
-            panelClass: ['error-snackbar']
-          });
-        }
-      }
-    });
-  }
 
   promptJoinQueue(table: Table) {
     // Open dialog for table-specific queue
@@ -189,43 +157,25 @@ export class TableListComponent implements OnInit {
         tableName: table.name,
         capacity: table.capacity,
         status: table.status,
-        queueSize: this.tableQueueService.getQueue().filter(q => q.restaurantId === table.id.toString()).length
+        queueSize: this.tableQueueService.getAvailableTables(table.capacity).length // Mock logic updated
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.action === 'join') {
-        // Join table-specific queue
-        const queueResult = this.tableQueueService.joinQueue(
-          result.customerName,
-          result.partySize,
-          `table-${table.id}` // Table-specific queue identifier
-        );
-
-        if (queueResult.success && queueResult.queueId) {
-          // Track this queue entry
-          this.myQueueEntries.set(table.id, queueResult.queueId);
-
-          // Show success message
-          const snackBarRef = this.snackBar.open(
-            `Joined queue for ${table.name}! Position: ${queueResult.position}.`,
-            'View Status',
-            {
-              duration: 5000,
-              panelClass: ['success-snackbar']
-            }
-          );
-
-          // Open status dialog immediately or on action
-          snackBarRef.onAction().subscribe(() => {
-            this.openQueueStatusDialog(queueResult.queueId!);
-          });
-
-          // Auto-open status dialog after 1 second
-          setTimeout(() => {
-            this.openQueueStatusDialog(queueResult.queueId!);
-          }, 1000);
-        }
+        this.restaurantService.getBySlug(this.restaurantId).subscribe(res => {
+          if (res && res.id) {
+            this.tableQueueService.joinQueue({
+              restaurant_id: res.id,
+              customer_name: result.customerName,
+              party_size: result.partySize,
+              contact_info: 'User-Input' // Placeholder
+            }).subscribe(newEntry => {
+              this.myQueueEntries.set(table.id, newEntry.id.toString());
+              this.openQueueStatusDialog(newEntry.id.toString());
+            });
+          }
+        });
       }
     });
   }
@@ -236,38 +186,24 @@ export class TableListComponent implements OnInit {
       width: '500px',
       data: {
         tableSpecific: false,
-        queueSize: this.tableQueueService.getQueue().length
+        queueSize: this.tables.length // Simplified
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.action === 'join') {
-        // Join general queue
-        const queueResult = this.tableQueueService.joinQueue(
-          result.customerName,
-          result.partySize,
-          this.restaurantId || 'general'
-        );
-
-        if (queueResult.success && queueResult.queueId) {
-          const snackBarRef = this.snackBar.open(
-            `Joined general queue! Position: ${queueResult.position}.`,
-            'View Status',
-            {
-              duration: 5000,
-              panelClass: ['success-snackbar']
-            }
-          );
-
-          // Open status dialog on action or auto after 1 second
-          snackBarRef.onAction().subscribe(() => {
-            this.openQueueStatusDialog(queueResult.queueId!);
-          });
-
-          setTimeout(() => {
-            this.openQueueStatusDialog(queueResult.queueId!);
-          }, 1000);
-        }
+        this.restaurantService.getBySlug(this.restaurantId).subscribe(res => {
+          if (res && res.id) {
+            this.tableQueueService.joinQueue({
+              restaurant_id: res.id,
+              customer_name: result.customerName,
+              party_size: result.partySize
+            }).subscribe(newEntry => {
+              this.generalQueueEntryId = newEntry.id.toString();
+              this.openQueueStatusDialog(newEntry.id.toString());
+            });
+          }
+        });
       }
     });
   }
@@ -331,7 +267,7 @@ export class TableListComponent implements OnInit {
     if (!queueId) return null;
 
     const queue = this.tableQueueService.getQueue();
-    const entry = queue.find(q => q.id === queueId);
+    const entry = queue.find(q => q.id.toString() === queueId);
     return entry ? entry.position : null;
   }
 
@@ -341,8 +277,8 @@ export class TableListComponent implements OnInit {
     if (!queueId) return 0;
 
     const queue = this.tableQueueService.getQueue();
-    const entry = queue.find(q => q.id === queueId);
-    return entry ? entry.estimatedWaitTime : 0;
+    const entry = queue.find(q => q.id.toString() === queueId);
+    return entry ? entry.estimated_wait_time : 0;
   }
 
   // View queue status for a specific table
@@ -350,6 +286,26 @@ export class TableListComponent implements OnInit {
     const queueId = this.myQueueEntries.get(table.id);
     if (queueId) {
       this.openQueueStatusDialog(queueId);
+    }
+  }
+
+  getGeneralQueuePosition(): number | null {
+    if (!this.generalQueueEntryId) return null;
+    const queue = this.tableQueueService.getQueue();
+    const entry = queue.find(q => q.id.toString() === this.generalQueueEntryId);
+    return entry ? entry.position : null;
+  }
+
+  getGeneralQueueWaitTime(): number {
+    if (!this.generalQueueEntryId) return 0;
+    const queue = this.tableQueueService.getQueue();
+    const entry = queue.find(q => q.id.toString() === this.generalQueueEntryId);
+    return entry ? entry.estimated_wait_time : 0;
+  }
+
+  viewGeneralQueueStatus() {
+    if (this.generalQueueEntryId) {
+      this.openQueueStatusDialog(this.generalQueueEntryId);
     }
   }
 }

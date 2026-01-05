@@ -4,8 +4,8 @@ import { TableQueueService, QueueEntry } from '../../../core/services/table-queu
 import { Subscription, interval } from 'rxjs';
 
 @Component({
-    selector: 'app-queue-status-dialog',
-    template: `
+  selector: 'app-queue-status-dialog',
+  template: `
     <div class="queue-status-dialog">
       <h2 mat-dialog-title class="dialog-header">
         <mat-icon class="pulse-icon">schedule</mat-icon>
@@ -21,10 +21,10 @@ import { Subscription, interval } from 'rxjs';
           </div>
           
           <div class="customer-info">
-            <h3>{{ myEntry?.customerName }}</h3>
+            <h3>{{ myEntry?.customer_name }}</h3>
             <p class="party-size">
               <mat-icon inline>people</mat-icon>
-              Party of {{ myEntry?.partySize }}
+              Party of {{ myEntry?.party_size }}
             </p>
             <p class="queue-id">Queue ID: <span class="mono">{{ myEntry?.id }}</span></p>
           </div>
@@ -45,7 +45,7 @@ import { Subscription, interval } from 'rxjs';
             <mat-icon>schedule</mat-icon>
             <div>
               <span class="label">Estimated Wait</span>
-              <span class="value">~{{ myEntry.estimatedWaitTime }} minutes</span>
+              <span class="value">~{{ myEntry.estimated_wait_time }} minutes</span>
             </div>
           </div>
           <div class="info-row">
@@ -78,11 +78,11 @@ import { Subscription, interval } from 'rxjs';
               </div>
               <div class="item-info">
                 <div class="item-name">
-                  {{ entry.id === myEntry?.id ? 'You' : entry.customerName }}
+                  {{ entry.id === myEntry?.id ? 'You' : entry.customer_name }}
                   <mat-chip *ngIf="entry.id === myEntry?.id" class="me-chip">ME</mat-chip>
                 </div>
                 <div class="item-details">
-                  Party of {{ entry.partySize }} • ~{{ entry.estimatedWaitTime }} min wait
+                  Party of {{ entry.party_size }} • ~{{ entry.estimated_wait_time }} min wait
                 </div>
               </div>
               <div class="item-status">
@@ -110,7 +110,7 @@ import { Subscription, interval } from 'rxjs';
       </mat-dialog-actions>
     </div>
   `,
-    styles: [`
+  styles: [`
     .queue-status-dialog {
       min-width: 500px;
       max-width: 600px;
@@ -412,79 +412,79 @@ import { Subscription, interval } from 'rxjs';
   `]
 })
 export class QueueStatusDialogComponent implements OnInit, OnDestroy {
-    myEntry: QueueEntry | null = null;
-    queueList: QueueEntry[] = [];
-    totalQueueSize: number = 0;
-    lastUpdateTime: string = 'just now';
+  myEntry: QueueEntry | null = null;
+  queueList: QueueEntry[] = [];
+  totalQueueSize: number = 0;
+  lastUpdateTime: string = 'just now';
 
-    private queueSubscription?: Subscription;
-    private updateInterval?: Subscription;
-    private alertShown: boolean = false;
+  private queueSubscription?: Subscription;
+  private updateInterval?: Subscription;
+  private alertShown: boolean = false;
 
-    constructor(
-        public dialogRef: MatDialogRef<QueueStatusDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { queueId: string },
-        private tableQueueService: TableQueueService
-    ) { }
+  constructor(
+    public dialogRef: MatDialogRef<QueueStatusDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { queueId: string },
+    private tableQueueService: TableQueueService
+  ) { }
 
-    ngOnInit() {
-        // Subscribe to queue updates
-        this.queueSubscription = this.tableQueueService.queue$.subscribe(queue => {
-            this.queueList = queue.sort((a, b) => a.position - b.position);
-            this.totalQueueSize = queue.length;
-            this.myEntry = queue.find(q => q.id === this.data.queueId) || null;
+  ngOnInit() {
+    // Subscribe to queue updates
+    this.queueSubscription = this.tableQueueService.queue$.subscribe(queue => {
+      this.queueList = queue.sort((a, b) => a.position - b.position);
+      this.totalQueueSize = queue.length;
+      this.myEntry = queue.find(q => q.id.toString() === this.data.queueId) || null;
 
-            // Check if it's my turn
-            if (this.myEntry && this.myEntry.position === 1 && !this.alertShown) {
-                this.showReadyAlert();
-                this.alertShown = true;
-            }
+      // Check if it's my turn
+      if (this.myEntry && this.myEntry.position === 1 && !this.alertShown) {
+        this.showReadyAlert();
+        this.alertShown = true;
+      }
 
-            this.updateLastUpdateTime();
-        });
+      this.updateLastUpdateTime();
+    });
 
-        // Update time every 10 seconds
-        this.updateInterval = interval(10000).subscribe(() => {
-            this.updateLastUpdateTime();
-        });
+    // Update time every 10 seconds
+    this.updateInterval = interval(10000).subscribe(() => {
+      this.updateLastUpdateTime();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.queueSubscription) {
+      this.queueSubscription.unsubscribe();
+    }
+    if (this.updateInterval) {
+      this.updateInterval.unsubscribe();
+    }
+  }
+
+  updateLastUpdateTime() {
+    const now = new Date();
+    this.lastUpdateTime = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+
+  showReadyAlert() {
+    // Play notification sound (if available)
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Your Table is Ready! 🎉', {
+        body: 'Please proceed to the restaurant now.',
+        icon: '/assets/icons/icon-192x192.png'
+      });
     }
 
-    ngOnDestroy() {
-        if (this.queueSubscription) {
-            this.queueSubscription.unsubscribe();
-        }
-        if (this.updateInterval) {
-            this.updateInterval.unsubscribe();
-        }
-    }
+    // You could also play a sound here
+    // const audio = new Audio('assets/sounds/notification.mp3');
+    // audio.play();
+  }
 
-    updateLastUpdateTime() {
-        const now = new Date();
-        this.lastUpdateTime = now.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
+  leaveQueue() {
+    if (this.myEntry && confirm('Are you sure you want to leave the queue?')) {
+      this.tableQueueService.leaveQueue(this.myEntry.id);
+      this.dialogRef.close({ left: true });
     }
-
-    showReadyAlert() {
-        // Play notification sound (if available)
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Your Table is Ready! 🎉', {
-                body: 'Please proceed to the restaurant now.',
-                icon: '/assets/icons/icon-192x192.png'
-            });
-        }
-
-        // You could also play a sound here
-        // const audio = new Audio('assets/sounds/notification.mp3');
-        // audio.play();
-    }
-
-    leaveQueue() {
-        if (this.myEntry && confirm('Are you sure you want to leave the queue?')) {
-            this.tableQueueService.leaveQueue(this.myEntry.id);
-            this.dialogRef.close({ left: true });
-        }
-    }
+  }
 }

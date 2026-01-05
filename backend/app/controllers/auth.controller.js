@@ -95,15 +95,68 @@ exports.verifyOtpAndLogin = (req, res) => {
 };
 
 function generateTokenAndResponse(user, res) {
-    var token = jwt.sign({ id: user.id, role: user.role }, config.secret, {
-        expiresIn: 86400 // 24 hours
-    });
+    var token = jwt.sign(
+        {
+            id: user.id,
+            role: user.role,
+            restaurant_id: user.restaurant_id
+        },
+        config.secret,
+        { expiresIn: 86400 } // 24 hours
+    );
 
     res.status(200).send({
         id: user.id,
         name: user.name,
         role: user.role,
         contact_info: user.contact_info,
+        restaurant_id: user.restaurant_id,
         accessToken: token
     });
 }
+
+// Username/Password Login (for Admin and Restaurant users)
+exports.login = (req, res) => {
+    if (!req.body.username || !req.body.password) {
+        res.status(400).send({
+            message: "Username and password are required!"
+        });
+        return;
+    }
+
+    const { username, password } = req.body;
+    const bcrypt = require('bcryptjs');
+
+    // Find user by contact_info (username)
+    User.findByContactInfo(username, (err, user) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                return res.status(404).send({
+                    message: "User not found!"
+                });
+            }
+            return res.status(500).send({
+                message: "Error retrieving user."
+            });
+        }
+
+        // Check if user has a password (Admin/RestaurantAdmin/RestaurantStaff)
+        if (!user.password) {
+            return res.status(400).send({
+                message: "This user cannot login with password. Please use OTP login."
+            });
+        }
+
+        // Verify password
+        const passwordIsValid = bcrypt.compareSync(password, user.password);
+
+        if (!passwordIsValid) {
+            return res.status(401).send({
+                message: "Invalid password!"
+            });
+        }
+
+        // Generate token and send response
+        generateTokenAndResponse(user, res);
+    });
+};

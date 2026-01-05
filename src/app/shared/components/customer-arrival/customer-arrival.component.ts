@@ -4,8 +4,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { TableQueueService } from '../../../core/services/table-queue.service';
 
 @Component({
-    selector: 'app-customer-arrival',
-    template: `
+  selector: 'app-customer-arrival',
+  template: `
     <div class="arrival-container" style="max-width: 600px; margin: 80px auto; padding: 32px;">
       <mat-card>
         <mat-card-header>
@@ -57,7 +57,7 @@ import { TableQueueService } from '../../../core/services/table-queue.service';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .full-width {
       width: 100%;
       margin-bottom: 16px;
@@ -65,44 +65,44 @@ import { TableQueueService } from '../../../core/services/table-queue.service';
   `]
 })
 export class CustomerArrivalComponent implements OnInit {
-    partySize: number = 2;
-    restaurantName: string = '';
+  partySize: number = 2;
+  restaurantName: string = '';
 
-    constructor(
-        private router: Router,
-        private route: ActivatedRoute,
-        private tableQueueService: TableQueueService
-    ) { }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private tableQueueService: TableQueueService
+  ) { }
 
-    ngOnInit() {
-        this.restaurantName = this.route.snapshot.paramMap.get('restaurantName') || '';
+  ngOnInit() {
+    this.restaurantName = this.route.snapshot.paramMap.get('restaurantName') || '';
+  }
+
+  checkAvailability() {
+    const result = this.tableQueueService.checkAvailabilityAndSuggest(this.partySize);
+
+    if (result.length > 0) {
+      // Tables available - go to tables page
+      this.router.navigate([this.restaurantName ? `/${this.restaurantName}/tables` : '/tables'], {
+        queryParams: { checkAvailability: 'true', partySize: this.partySize }
+      });
+    } else {
+      // No tables available - go to queue
+      this.router.navigate([this.restaurantName ? `/${this.restaurantName}/queue` : '/queue'], {
+        queryParams: { autoJoin: 'true', partySize: this.partySize }
+      });
     }
+  }
 
-    checkAvailability() {
-        const result = this.tableQueueService.checkAvailabilityAndSuggest(this.partySize);
+  goToTables() {
+    this.router.navigate([this.restaurantName ? `/${this.restaurantName}/tables` : '/tables']);
+  }
 
-        if (result.hasAvailable) {
-            // Tables available - go to tables page
-            this.router.navigate([this.restaurantName ? `/${this.restaurantName}/tables` : '/tables'], {
-                queryParams: { checkAvailability: 'true', partySize: this.partySize }
-            });
-        } else {
-            // No tables available - go to queue
-            this.router.navigate([this.restaurantName ? `/${this.restaurantName}/queue` : '/queue'], {
-                queryParams: { autoJoin: 'true', partySize: this.partySize }
-            });
-        }
-    }
+  goToQueue() {
+    this.router.navigate([this.restaurantName ? `/${this.restaurantName}/queue` : '/queue']);
+  }
 
-    goToTables() {
-        this.router.navigate([this.restaurantName ? `/${this.restaurantName}/tables` : '/tables']);
-    }
-
-    goToQueue() {
-        this.router.navigate([this.restaurantName ? `/${this.restaurantName}/queue` : '/queue']);
-    }
-
-    goToReservation() {
-        this.router.navigate([this.restaurantName ? `/${this.restaurantName}/reservation` : '/reservation']);
-    }
+  goToReservation() {
+    this.router.navigate([this.restaurantName ? `/${this.restaurantName}/reservation` : '/reservation']);
+  }
 }

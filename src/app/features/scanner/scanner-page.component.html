@@ -1,0 +1,270 @@
+<div class="scanner-app">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-screen">
+        <mat-spinner diameter="40" color="accent"></mat-spinner>
+        <p>Initializing...</p>
+    </div>
+
+    <!-- Authentication Screen -->
+    <div *ngIf="!isValidated && !isLoading" class="auth-screen">
+        <div class="auth-content">
+            <div class="icon-circle">
+                <mat-icon>qr_code_scanner</mat-icon>
+            </div>
+            <h1>Staff Access</h1>
+            <p class="subtitle">{{ restaurantName | titlecase }}</p>
+
+            <div class="auth-form">
+                <div class="input-wrapper">
+                    <input [(ngModel)]="accessKey" type="password" placeholder="Enter Access Key"
+                        (keyup.enter)="validateKey()">
+                </div>
+                <button class="auth-btn" (click)="validateKey()">
+                    Authenticate
+                </button>
+            </div>
+
+            <p class="hint">Please obtain the access key from your manager</p>
+        </div>
+    </div>
+
+    <!-- Main Interface after Authentication -->
+    <div *ngIf="isValidated && !isLoading" class="scanner-interface">
+
+        <!-- Header -->
+        <div class="scanner-header">
+            <div class="status-pill">
+                <div class="dot" [class.pulse]="viewMode === 'scanner'"></div>
+                <span>{{ viewMode === 'scanner' ? 'Live Scanner' : 'Guest List' }}</span>
+            </div>
+            <button class="logout-btn" (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                <span>Exit</span>
+            </button>
+        </div>
+
+        <!-- View 1: Compact Camera Scanner -->
+        <div class="scanner-container-wrapper" *ngIf="viewMode === 'scanner'">
+            <div class="scanner-card">
+                <div class="viewport">
+                    <!-- Error if no camera -->
+                    <div *ngIf="!hasCameras" class="error-slate">
+                        <mat-icon>videocam_off</mat-icon>
+                        <p>Camera Access Needed</p>
+                    </div>
+
+                    <!-- The Scanner Component -->
+                    <zxing-scanner #scanner class="camera-feed" [formats]="allowedFormats" [device]="currentDevice"
+                        (camerasFound)="onCamerasFound($event)" (scanSuccess)="onScanSuccess($event)">
+                    </zxing-scanner>
+
+                    <!-- Scanning Frame Overlay -->
+                    <div class="scan-frame-container" *ngIf="hasCameras">
+                        <div class="scan-box">
+                            <div class="corner tl"></div>
+                            <div class="corner tr"></div>
+                            <div class="corner bl"></div>
+                            <div class="corner br"></div>
+                            <div class="scan-line"></div>
+                        </div>
+                    </div>
+
+                    <!-- Scanned Details Overlay -->
+                    <div class="scanned-details-overlay" *ngIf="false">
+                        <div class="overlay-card">
+                            <div class="overlay-header">
+                                <mat-icon class="icon">confirmation_number</mat-icon>
+                                <h3>Reservation Found</h3>
+                            </div>
+
+                            <div class="overlay-content">
+                                <div class="detail-group">
+                                    <label>Guest Name</label>
+                                    <p class="name">{{ scannedReservation.customer_name }}</p>
+                                </div>
+
+                                <div class="kv-grid">
+                                    <div class="kv-item">
+                                        <label>Date</label>
+                                        <p>{{ scannedReservation.reservation_date | date:'MMM d' }}</p>
+                                    </div>
+                                    <div class="kv-item">
+                                        <label>Time</label>
+                                        <p>{{ scannedReservation.reservation_time }}</p>
+                                    </div>
+                                    <div class="kv-item">
+                                        <label>Guests</label>
+                                        <p>{{ scannedReservation.party_size }} Pax</p>
+                                    </div>
+                                    <div class="kv-item" *ngIf="scannedReservation.table_no">
+                                        <label>Table</label>
+                                        <p>{{ scannedReservation.table_no }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="status-badge" [class.confirmed]="scannedReservation.status === 'Confirmed'">
+                                    Status: {{ scannedReservation.status }}
+                                </div>
+                            </div>
+
+                            <div class="overlay-actions">
+                                <button class="cancel-btn" (click)="cancelCheckIn()">
+                                    Cancel
+                                </button>
+                                <button class="seat-btn" (click)="confirmCheckIn()">
+                                    <mat-icon>check</mat-icon> Seat Guest
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="scanner-instruction">
+                    <p>Align QR code within the frame</p>
+                </div>
+            </div>
+
+            <!-- Result Toast -->
+            <div class="result-toast" *ngIf="(scanResult || processingScan) && !scannedReservation"
+                [class.active]="true">
+                <div class="toast-content">
+                    <mat-spinner *ngIf="processingScan" diameter="24" color="accent"></mat-spinner>
+                    <mat-icon *ngIf="!processingScan" class="success">check_circle</mat-icon>
+                    <span class="message">{{ processingScan ? 'Verifying...' : 'Check-in Successful' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 2: Guest List -->
+        <div class="list-view-interface" *ngIf="viewMode === 'list'">
+
+            <!-- Confirmed Reservations -->
+            <div class="section-title">Expected Arrivals</div>
+            <div class="guest-list">
+                <div class="guest-card" *ngFor="let res of confirmedReservations">
+                    <div class="guest-info">
+                        <h4>{{ res.customer_name }}</h4>
+                        <div class="meta">
+                            <span>{{ res.reservation_date | date:'MMM d' }}</span>
+                            <span class="separator"></span>
+                            <span>{{ res.reservation_time.toString().substring(0,5) }}</span>
+                            <span class="separator"></span>
+                            <span>{{ res.party_size }} Guests</span>
+                            <span class="separator" *ngIf="res.table_no"></span>
+                            <span *ngIf="res.table_no">Table {{ res.table_no }}</span>
+                        </div>
+                        <div class="details" *ngIf="res.customer_phone || res.special_requests">
+                            <div class="detail-item" *ngIf="res.customer_phone">
+                                <mat-icon>phone</mat-icon> {{ res.customer_phone }}
+                            </div>
+                            <div class="detail-item" *ngIf="res.special_requests" style="color: #fca5a5;">
+                                <mat-icon>info</mat-icon> {{ res.special_requests }}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <span class="badge" [class.confirmed]="res.status === 'Confirmed'"
+                            [class.pending]="res.status === 'Pending'">
+                            {{ res.status }}
+                        </span>
+                        <button class="seat-action-btn" (click)="markAsSeated(res.id)">
+                            <mat-icon>event_seat</mat-icon>
+                            <span>Seat</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="empty-state" *ngIf="confirmedReservations.length === 0">
+                    No reservations found for today.
+                </div>
+            </div>
+
+            <!-- Seated Guests -->
+            <div class="section-title">Currently Seated</div>
+            <div class="guest-list">
+                <div class="guest-card" *ngFor="let guest of seatedGuests">
+                    <div class="guest-info">
+                        <h4>{{ guest.customer_name }}</h4>
+                        <div class="meta">
+                            <span>{{ guest.party_size }} Guests</span>
+                            <span class="separator"></span>
+                            <span>Table {{ guest.table_no || 'N/A' }}</span>
+                        </div>
+                        <div class="details" *ngIf="guest.customer_phone">
+                            <div class="detail-item">
+                                <mat-icon>phone</mat-icon> {{ guest.customer_phone }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="badge seated">Seated</div>
+                </div>
+                <div class="empty-state" *ngIf="seatedGuests.length === 0">
+                    No guests seated yet.
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Scanned Details Overlay -->
+        <div class="scanned-details-overlay" *ngIf="scannedReservation">
+            <div class="overlay-card">
+                <div class="overlay-header">
+                    <mat-icon class="icon">confirmation_number</mat-icon>
+                    <h3>Reservation Found</h3>
+                </div>
+
+                <div class="overlay-content">
+                    <div class="detail-group">
+                        <label>Guest Name</label>
+                        <p class="name">{{ scannedReservation.customer_name }}</p>
+                    </div>
+
+                    <div class="kv-grid">
+                        <div class="kv-item">
+                            <label>Date</label>
+                            <p>{{ scannedReservation.reservation_date | date:'MMM d' }}</p>
+                        </div>
+                        <div class="kv-item">
+                            <label>Time</label>
+                            <p>{{ scannedReservation.reservation_time }}</p>
+                        </div>
+                        <div class="kv-item">
+                            <label>Guests</label>
+                            <p>{{ scannedReservation.party_size }} Pax</p>
+                        </div>
+                        <div class="kv-item" *ngIf="scannedReservation.table_no">
+                            <label>Table</label>
+                            <p>{{ scannedReservation.table_no }}</p>
+                        </div>
+                    </div>
+
+                    <div class="status-badge" [class.confirmed]="scannedReservation.status === 'Confirmed'">
+                        Status: {{ scannedReservation.status }}
+                    </div>
+                </div>
+
+                <div class="overlay-actions">
+                    <button class="cancel-btn" (click)="cancelCheckIn()">
+                        Cancel
+                    </button>
+                    <button class="seat-btn" (click)="confirmCheckIn()">
+                        <mat-icon>check</mat-icon> Seat Guest
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Controls Bar -->
+        <div class="bottom-bar">
+            <!-- View Toggle Button -->
+            <button class="view-toggle" (click)="toggleViewMode()">
+                <mat-icon>{{ viewMode === 'scanner' ? 'list_alt' : 'qr_code_scanner' }}</mat-icon>
+                <span>{{ viewMode === 'scanner' ? 'View List' : 'Scan QR' }}</span>
+            </button>
+
+            <!-- Camera Toggle (Only in Scanner Mode) -->
+            <button class="cam-switch-btn" *ngIf="viewMode === 'scanner' && availableDevices.length > 1"
+                (click)="switchCamera()">
+                <mat-icon>cameraswitch</mat-icon>
+            </button>
+        </div>
+    </div>
+</div>

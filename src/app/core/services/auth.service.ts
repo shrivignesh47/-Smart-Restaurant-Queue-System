@@ -9,6 +9,8 @@ export interface User {
     name: string;
     role: string;
     contact_info: string;
+    email?: string;
+    restaurant_id?: number;
     avatar?: string;
 }
 
@@ -18,6 +20,7 @@ export interface AuthResponse {
     name: string;
     role: string;
     contact_info: string;
+    restaurant_id?: number;
 }
 
 export interface OtpResponse {
@@ -89,6 +92,24 @@ export class AuthService {
             );
     }
 
+    // Username/Password Login (for Admin and Restaurant users)
+    login(username: string, password: string): Observable<AuthResponse> {
+        console.log('[AuthService] Logging in with username:', username);
+        console.log('[AuthService] API URL:', `${this.apiUrl}/login`);
+
+        return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { username, password })
+            .pipe(
+                tap(response => {
+                    console.log('[AuthService] Login Response:', response);
+                    this.setSession(response);
+                }),
+                catchError(error => {
+                    console.error('[AuthService] Login Error:', error);
+                    return throwError(() => error);
+                })
+            );
+    }
+
     private setSession(authResult: AuthResponse) {
         console.log('[AuthService] Setting session for user:', authResult.name);
 
@@ -140,5 +161,30 @@ export class AuthService {
         }
 
         return true;
+    }
+
+    // Update Admin Profile (username, name, password)
+    updateAdminProfile(userId: number, updates: { name?: string; contact_info?: string; password?: string }): Observable<any> {
+        console.log('[AuthService] Updating admin profile for user:', userId);
+        return this.http.put(`${environment.apiUrl}/users/${userId}/admin-profile`, updates)
+            .pipe(
+                tap(response => {
+                    console.log('[AuthService] Profile updated:', response);
+                    // Update local user data if name or username changed
+                    if (updates.name || updates.contact_info) {
+                        const currentUser = this.currentUserValue;
+                        if (currentUser) {
+                            if (updates.name) currentUser.name = updates.name;
+                            if (updates.contact_info) currentUser.contact_info = updates.contact_info;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            this.userSubject.next(currentUser);
+                        }
+                    }
+                }),
+                catchError(error => {
+                    console.error('[AuthService] Profile update error:', error);
+                    return throwError(() => error);
+                })
+            );
     }
 }

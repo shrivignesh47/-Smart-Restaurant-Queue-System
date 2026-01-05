@@ -7,6 +7,7 @@ import { AdminSidebarComponent } from './admin-dashboard/components/sidebar/side
 import { AddRestaurantDialogComponent } from './admin-dashboard/add-restaurant-dialog.component';
 import { AddAdminDialogComponent } from './admin-dashboard/add-admin-dialog.component';
 import { AddManagerDialogComponent } from './admin-dashboard/add-manager-dialog.component';
+import { AdminProfileDialogComponent } from './admin-dashboard/admin-profile-dialog.component';
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
@@ -16,7 +17,8 @@ import { SharedModule } from '../../shared/shared.module';
     AdminSidebarComponent,
     AddRestaurantDialogComponent,
     AddAdminDialogComponent,
-    AddManagerDialogComponent
+    AddManagerDialogComponent,
+    AdminProfileDialogComponent
   ],
   imports: [
     CommonModule,

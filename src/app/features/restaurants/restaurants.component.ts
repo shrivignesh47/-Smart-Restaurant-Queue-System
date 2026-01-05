@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RestaurantDataService, Restaurant } from '../../shared/services/restaurant-data.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
 
 @Component({
   selector: 'app-restaurants',
@@ -13,22 +13,61 @@ export class RestaurantsComponent implements OnInit {
   selectedCity = 'all';
   sortBy = 'rating';
 
-  restaurants: Restaurant[] = [];
-  filteredRestaurants: Restaurant[] = [];
+  restaurants: any[] = [];
+  filteredRestaurants: any[] = [];
   cities: string[] = [];
+  isLoading = true;
 
   constructor(
     private router: Router,
     private snackBar: MatSnackBar,
-    private restaurantDataService: RestaurantDataService
+    private restaurantService: RestaurantService
   ) { }
 
   ngOnInit(): void {
-    // Load all restaurants
-    this.restaurants = this.restaurantDataService.getAllRestaurants();
-    this.cities = ['all', ...this.restaurantDataService.getCities()];
-    this.filteredRestaurants = [...this.restaurants];
-    this.sortRestaurants();
+    this.loadRestaurants();
+  }
+
+  loadRestaurants(): void {
+    this.isLoading = true;
+    // Fetch only active restaurants
+    this.restaurantService.getAll({ status: 'active' }).subscribe({
+      next: (data) => {
+        this.restaurants = data.map(r => this.mapToDisplay(r));
+        // Extract unique cities
+        const uniqueCities = new Set(this.restaurants.map(r => r.city).filter(c => c));
+        this.cities = ['all', ...Array.from(uniqueCities)].sort();
+
+        this.filteredRestaurants = [...this.restaurants];
+        this.sortRestaurants();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading restaurants', err);
+        this.snackBar.open('Failed to load restaurants', 'Close', { duration: 3000 });
+        this.isLoading = false;
+      }
+    });
+  }
+
+  mapToDisplay(r: any): any {
+    // Map backend data to the format expected by the card component
+    return {
+      ...r,
+      // Use cover image or fallback
+      image: r.cover_image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+      location: r.city || 'Tamil Nadu',
+      // Mock / Default values for missing backend fields
+      rating: 4.5,
+      waitTime: '10-20 mins',
+      status: 'Medium', // Maps to CSS class 'medium' (Low, Medium, Busy)
+      // Convert comma-separated string to array
+      cuisine: r.cuisine_type ? r.cuisine_type.split(',').map((c: string) => c.trim()) : [],
+      specialties: [],
+      priceRange: '₹₹',
+      openingHours: (r.opening_time && r.closing_time) ?
+        `${r.opening_time.toString().substring(0, 5)} - ${r.closing_time.toString().substring(0, 5)}` : '10:00 - 22:00'
+    };
   }
 
   filterRestaurants(): void {
@@ -38,27 +77,16 @@ export class RestaurantsComponent implements OnInit {
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
       filtered = filtered.filter(r =>
-        r.name.toLowerCase().includes(query) ||
-        r.cuisine.some(c => c.toLowerCase().includes(query)) ||
-        r.location.toLowerCase().includes(query) ||
-        r.description.toLowerCase().includes(query)
+        (r.name && r.name.toLowerCase().includes(query)) ||
+        (r.cuisine && r.cuisine.some((c: string) => c.toLowerCase().includes(query))) ||
+        (r.location && r.location.toLowerCase().includes(query)) ||
+        (r.description && r.description.toLowerCase().includes(query))
       );
     }
 
     // Filter by city
     if (this.selectedCity && this.selectedCity !== 'all') {
-      filtered = this.restaurantDataService.getRestaurantsByCity(this.selectedCity);
-
-      // Apply search filter on city-filtered results
-      if (this.searchQuery) {
-        const query = this.searchQuery.toLowerCase();
-        filtered = filtered.filter(r =>
-          r.name.toLowerCase().includes(query) ||
-          r.cuisine.some(c => c.toLowerCase().includes(query)) ||
-          r.location.toLowerCase().includes(query) ||
-          r.description.toLowerCase().includes(query)
-        );
-      }
+      filtered = filtered.filter(r => r.city && r.city.toLowerCase() === this.selectedCity.toLowerCase());
     }
 
     this.filteredRestaurants = filtered;
@@ -74,16 +102,14 @@ export class RestaurantsComponent implements OnInit {
         this.filteredRestaurants.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case 'waitTime':
-        this.filteredRestaurants.sort((a, b) => {
-          const aTime = parseInt(a.waitTime);
-          const bTime = parseInt(b.waitTime);
-          return aTime - bTime;
-        });
+        // Mock sorting for mock wait times
+        this.filteredRestaurants.sort((a, b) => parseInt(a.waitTime) - parseInt(b.waitTime));
         break;
     }
   }
 
-  viewRestaurant(restaurant: Restaurant): void {
-    this.router.navigate([`/${restaurant.name}`]);
+  viewRestaurant(restaurant: any): void {
+    // Navigate using slug if available, else name
+    this.router.navigate([`/${restaurant.slug || restaurant.name}`]);
   }
 }

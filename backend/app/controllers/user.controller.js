@@ -2,19 +2,31 @@ const User = require("../models/user.model.js");
 
 // Create and Save a new User
 exports.create = (req, res) => {
+    const bcrypt = require("bcryptjs");
+
     // Validate request
-    if (!req.body) {
+    if (!req.body || !req.body.contact_info) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
+        return;
+    }
+
+    // Hash password if provided
+    let hashedPassword = null;
+    if (req.body.password) {
+        hashedPassword = bcrypt.hashSync(req.body.password, 10);
     }
 
     // Create a User
-    const user = new User({
+    const user = {
         name: req.body.name,
         role: req.body.role || "Customer",
-        contact_info: req.body.contact_info
-    });
+        contact_info: req.body.contact_info,
+        password: hashedPassword,
+        restaurant_id: req.body.restaurant_id || null,
+        created_at: new Date()
+    };
 
     // Save User in the database
     User.create(user, (err, data) => {
@@ -23,19 +35,41 @@ exports.create = (req, res) => {
                 message:
                     err.message || "Some error occurred while creating the User."
             });
-        else res.send(data);
+        else {
+            // Remove password from response
+            const { password, ...userWithoutPassword } = data;
+            res.send(userWithoutPassword);
+        }
     });
 };
 
-// Retrieve all Users from the database.
+// Retrieve all Users from the database (with optional role filter).
 exports.findAll = (req, res) => {
-    User.getAll((err, data) => {
+    const role = req.query.role;
+    User.getAll(role, (err, data) => {
         if (err)
             res.status(500).send({
                 message:
                     err.message || "Some error occurred while retrieving users."
             });
         else res.send(data);
+    });
+};
+
+// Find a single User with a id
+exports.findOne = (req, res) => {
+    User.findById(req.params.id, (err, data) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(404).send({
+                    message: `Not found User with id ${req.params.id}.`
+                });
+            } else {
+                res.status(500).send({
+                    message: "Error retrieving User with id " + req.params.id
+                });
+            }
+        } else res.send(data);
     });
 };
 
@@ -50,7 +84,7 @@ exports.update = (req, res) => {
 
     User.updateById(
         req.params.id,
-        new User(req.body),
+        req.body,  // Pass the entire body instead of creating a new User object
         (err, data) => {
             if (err) {
                 if (err.kind === "not_found") {
@@ -81,5 +115,64 @@ exports.delete = (req, res) => {
                 });
             }
         } else res.send({ message: `User was deleted successfully!` });
+    });
+};
+
+// Update Admin Profile (username, name, password)
+exports.updateAdminProfile = (req, res) => {
+    console.log('[AdminProfile] Update request received');
+    console.log('[AdminProfile] User ID from params:', req.params.id);
+    console.log('[AdminProfile] User ID from token:', req.userId);
+    console.log('[AdminProfile] User role:', req.userRole);
+    console.log('[AdminProfile] Request body:', req.body);
+
+    if (!req.body) {
+        res.status(400).send({
+            message: "Content can not be empty!"
+        });
+        return;
+    }
+
+    // Only allow updating own profile or if super admin
+    const userId = req.params.id;
+    if (req.userId != userId && req.userRole !== 'Admin') {
+        console.log('[AdminProfile] Access denied - user can only update own profile');
+        res.status(403).send({
+            message: "You can only update your own profile!"
+        });
+        return;
+    }
+
+    const updates = {
+        name: req.body.name,
+        contact_info: req.body.contact_info,
+        password: req.body.password
+    };
+
+    console.log('[AdminProfile] Updates to apply:', updates);
+
+    User.updateAdminProfile(userId, updates, (err, data) => {
+        if (err) {
+            console.log('[AdminProfile] Error:', err);
+            if (err.kind === "not_found") {
+                res.status(404).send({
+                    message: `Not found User with id ${userId}.`
+                });
+            } else if (err.kind === "no_updates") {
+                res.status(400).send({
+                    message: "No fields to update!"
+                });
+            } else {
+                res.status(500).send({
+                    message: "Error updating profile with id " + userId
+                });
+            }
+        } else {
+            console.log('[AdminProfile] Update successful:', data);
+            res.send({
+                message: "Profile updated successfully!",
+                data: data
+            });
+        }
     });
 };

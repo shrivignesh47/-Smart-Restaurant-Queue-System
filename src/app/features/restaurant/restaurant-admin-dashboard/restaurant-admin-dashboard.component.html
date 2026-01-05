@@ -31,7 +31,7 @@
                 </a>
                 <a mat-list-item [class.active]="activeTab === 'tables'"
                     (click)="activeTab = 'tables'; isMobile ? sidenav.close() : null">
-                    <mat-icon>event_seat</mat-icon>
+                    <mat-icon>grid_view</mat-icon>
                     <span>Table Management</span>
                 </a>
                 <a mat-list-item [class.active]="activeTab === 'reservations'"
@@ -136,8 +136,87 @@
                         <button mat-stroked-button color="primary" (click)="activeTab = 'reservations'">
                             <mat-icon>event_available</mat-icon> View Reservations
                         </button>
+                        <button mat-raised-button style="background: #01b574; color: white;" (click)="openScanner()">
+                            <mat-icon>qr_code_scanner</mat-icon> Scan QR Code
+                        </button>
                     </div>
                 </div>
+
+                <!-- Booking Statistics -->
+                <div class="booking-stats-section">
+                    <h3>Today's Booking Status</h3>
+                    <div class="booking-stats-grid">
+                        <div class="booking-stat-card confirmed">
+                            <div class="stat-icon"><mat-icon>event_available</mat-icon></div>
+                            <div class="stat-value">{{ dashboardStats.confirmed }}</div>
+                            <div class="stat-label">Confirmed</div>
+                        </div>
+
+                        <div class="booking-stat-card pending">
+                            <div class="stat-icon"><mat-icon>pending</mat-icon></div>
+                            <div class="stat-value">{{ dashboardStats.pending }}</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+
+                        <div class="booking-stat-card seated">
+                            <div class="stat-icon"><mat-icon>event_seat</mat-icon></div>
+                            <div class="stat-value">{{ dashboardStats.seated }}</div>
+                            <div class="stat-label">Seated</div>
+                        </div>
+
+                        <div class="booking-stat-card cancelled">
+                            <div class="stat-icon"><mat-icon>event_busy</mat-icon></div>
+                            <div class="stat-value">{{ dashboardStats.cancelled }}</div>
+                            <div class="stat-label">Cancelled</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scanner Access Key Management -->
+                <mat-card class="scanner-key-card">
+                    <mat-card-header>
+                        <mat-card-title>
+                            <mat-icon>qr_code_scanner</mat-icon> QR Scanner Access
+                        </mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div *ngIf="currentRestaurant?.scanner_access_key && !showKeyInput" class="key-display">
+                            <div class="key-value-container">
+                                <span class="key-label">Current Access Key:</span>
+                                <span class="key-value">{{ currentRestaurant?.scanner_access_key }}</span>
+                                <button mat-icon-button (click)="copyKeyToClipboard()" matTooltip="Copy to clipboard">
+                                    <mat-icon>content_copy</mat-icon>
+                                </button>
+                            </div>
+                            <div class="key-info">
+                                <mat-icon>info</mat-icon>
+                                <span>Share this key with staff to access the scanner at: <strong>{{ restaurantName
+                                        }}/scanner</strong></span>
+                            </div>
+                            <button mat-raised-button color="primary" (click)="showKeyInput = true">
+                                <mat-icon>edit</mat-icon> Change Key
+                            </button>
+                        </div>
+
+                        <div *ngIf="!currentRestaurant?.scanner_access_key || showKeyInput" class="key-input">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Scanner Access Key</mat-label>
+                                <input matInput [(ngModel)]="scannerAccessKey"
+                                    placeholder="Enter a secure key (min 6 characters)" minlength="6">
+                                <mat-hint>This key will be used by staff to access the QR scanner</mat-hint>
+                            </mat-form-field>
+                            <div class="button-group">
+                                <button mat-raised-button color="primary" (click)="updateScannerKey()">
+                                    <mat-icon>save</mat-icon> Save Key
+                                </button>
+                                <button mat-button (click)="showKeyInput = false"
+                                    *ngIf="currentRestaurant?.scanner_access_key">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
             </div>
 
             <div *ngIf="activeTab === 'queue'" class="tab-content">
@@ -160,10 +239,12 @@
                                         {{ i + 1 }}
                                     </div>
                                     <div class="customer-details">
-                                        <h4 style="margin: 0; font-weight: 700; color: #1b2559;">{{ customer.name }}
+                                        <h4 style="margin: 0; font-weight: 700; color: #1b2559;">{{
+                                            customer.customer_name }}
                                         </h4>
-                                        <p style="margin: 4px 0 0; color: #a3aed0;">{{ customer.partySize }} Guests • {{
-                                            customer.waitTime }} min wait</p>
+                                        <p style="margin: 4px 0 0; color: #a3aed0;">{{ customer.party_size }} Guests •
+                                            {{
+                                            customer.estimated_wait_time }} min wait</p>
                                     </div>
                                 </div>
                                 <div class="queue-actions">
@@ -179,75 +260,240 @@
             </div>
 
             <div *ngIf="activeTab === 'tables'" class="tab-content">
-                <div class="tables-grid">
-                    <div *ngFor="let table of tables" class="table-card" [ngClass]="table.status">
+                <div class="tables-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="margin: 0; font-weight: 800; color: #1b2559;">Manage Restaurant Tables</h2>
+                        <p style="margin: 4px 0 0; color: #a3aed0;">{{ tables.length }} tables total</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button mat-stroked-button color="primary" (click)="openBulkTableDialog()">
+                            <mat-icon>library_add</mat-icon> Bulk Add
+                        </button>
+                        <button mat-flat-button color="primary" (click)="openAddTableDialog()">
+                            <mat-icon>add</mat-icon> Add New Table
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tables-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+                    <div *ngFor="let table of tables" class="table-card modern-card"
+                        [ngClass]="table.status.toLowerCase()"
+                        style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; border-top: 4px solid;"
+                        [style.borderTopColor]="table.status === 'Available' ? '#01b574' : (table.status === 'Occupied' ? '#4318ff' : '#ee5d50')">
+
                         <div class="table-header"
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3>Table {{ table.number }}</h3>
-                            <mat-chip>{{ table.status | uppercase }}</mat-chip>
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1b2559;">Table {{
+                                    table.name }}</h3>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: #f4f7fe; color: #a3aed0;">{{
+                                        table.type || 'Regular' }}</span>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;"
+                                        [style.background]="table.status === 'Available' ? '#e6faf5' : '#f8faff'"
+                                        [style.color]="table.status === 'Available' ? '#01b574' : '#1b2559'">
+                                        {{ table.status | uppercase }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button mat-icon-button [matMenuTriggerFor]="tableMenu">
+                                    <mat-icon style="color: #a3aed0;">more_vert</mat-icon>
+                                </button>
+                                <mat-menu #tableMenu="matMenu">
+                                    <button mat-menu-item (click)="editTable(table)">
+                                        <mat-icon>edit</mat-icon>
+                                        <span>Edit Details</span>
+                                    </button>
+                                    <button mat-menu-item (click)="deleteTable(table)" style="color: #ee5d50;">
+                                        <mat-icon style="color: #ee5d50;">delete</mat-icon>
+                                        <span>Remove Table</span>
+                                    </button>
+                                </mat-menu>
+                            </div>
                         </div>
-                        <div class="table-info" style="margin-bottom: 20px;">
-                            <p style="color: #a3aed0; margin: 4px 0;"><mat-icon
-                                    style="font-size: 16px; height: 16px; width: 16px; vertical-align: middle;">group</mat-icon>
-                                Capacity: {{ table.capacity }}</p>
-                            <p *ngIf="table.currentGuest" style="color: #1b2559; font-weight: 600; margin: 4px 0;">
-                                <mat-icon
-                                    style="font-size: 16px; height: 16px; width: 16px; vertical-align: middle;">person</mat-icon>
-                                {{ table.currentGuest }}
-                            </p>
+
+                        <div class="table-info" style="margin-bottom: 24px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                <div
+                                    style="width: 32px; height: 32px; border-radius: 8px; background: #f4f7fe; display: flex; align-items: center; justify-content: center; color: #4318ff;">
+                                    <mat-icon style="font-size: 18px; width: 18px; height: 18px;">group</mat-icon>
+                                </div>
+                                <span style="color: #1b2559; font-weight: 600;">Capacity: {{ table.capacity }}
+                                    Seats</span>
+                            </div>
+
+                            <div *ngIf="table.bookedBy"
+                                style="margin-top: 16px; padding: 12px; border-radius: 12px; background: #f8faff; border-left: 3px solid #4318ff;">
+                                <p style="margin: 0; font-size: 0.75rem; color: #a3aed0; font-weight: 600;">OCCUPIED BY
+                                </p>
+                                <p style="margin: 4px 0 0; color: #1b2559; font-weight: 800;">{{ table.bookedBy }}</p>
+                                <p *ngIf="table.ticketId" style="margin: 2px 0 0; font-size: 0.7rem; color: #4318ff;">{{
+                                    table.ticketId }}</p>
+                            </div>
                         </div>
-                        <div class="table-actions">
-                            <button *ngIf="table.status === 'available'" mat-flat-button color="primary"
-                                style="width: 100%;" (click)="markOccupied(table)">Occupy</button>
-                            <button *ngIf="table.status === 'occupied'" mat-flat-button color="warn"
-                                style="width: 100%;" (click)="vacateTable(table)">Vacate</button>
-                            <button *ngIf="table.status === 'reserved'" mat-stroked-button color="primary"
-                                style="width: 100%;" (click)="viewReservation(table)">View Details</button>
+
+                        <div class="table-card-actions" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                            <button *ngIf="table.status === 'Available'" mat-flat-button color="primary"
+                                (click)="markOccupied(table)"
+                                style="border-radius: 12px; height: 44px; font-weight: 700;">
+                                Mark Occupied
+                            </button>
+                            <button *ngIf="table.status === 'Occupied' || table.status === 'Reserved'" mat-flat-button
+                                color="warn" (click)="vacateTable(table)"
+                                style="border-radius: 12px; height: 44px; font-weight: 700;">
+                                Vacate Table
+                            </button>
+                            <button *ngIf="table.status === 'Dirty'" mat-flat-button
+                                style="border-radius: 12px; height: 44px; font-weight: 700; background: #ffb547; color: white;"
+                                (click)="markAvailable(table)">
+                                Mark Clean
+                            </button>
                         </div>
                     </div>
+                </div>
+
+                <div *ngIf="tables.length === 0" class="empty-state"
+                    style="text-align: center; padding: 80px 0; background: white; border-radius: 20px; margin-top: 24px;">
+                    <mat-icon style="font-size: 64px; height: 64px; width: 64px; color: #f4f7fe;">event_seat</mat-icon>
+                    <h3 style="margin: 24px 0 8px; color: #1b2559; font-weight: 800;">No Tables Configured</h3>
+                    <p style="color: #a3aed0; margin-bottom: 24px;">Start by adding your first restaurant table.</p>
+                    <button mat-raised-button color="primary" (click)="openAddTableDialog()">
+                        <mat-icon>add</mat-icon> Add Table
+                    </button>
                 </div>
             </div>
 
             <!-- Other tabs simplified for brevity but following same pattern -->
             <div *ngIf="activeTab === 'reservations'" class="tab-content">
-                <mat-card class="modern-card">
-                    <mat-card-header><mat-card-title>Reservations</mat-card-title></mat-card-header>
-                    <mat-card-content>
-                        <table mat-table [dataSource]="reservations" style="width: 100%;">
-                            <ng-container matColumnDef="time">
-                                <th mat-header-cell *matHeaderCellDef> Time </th>
-                                <td mat-cell *matCellDef="let r"> {{r.time}} </td>
-                            </ng-container>
-                            <ng-container matColumnDef="name">
-                                <th mat-header-cell *matHeaderCellDef> Name </th>
-                                <td mat-cell *matCellDef="let r" style="font-weight: 700; color: #1b2559;">
-                                    {{r.customerName}} </td>
-                            </ng-container>
-                            <ng-container matColumnDef="guests">
-                                <th mat-header-cell *matHeaderCellDef> Guests </th>
-                                <td mat-cell *matCellDef="let r"> {{r.guests}} </td>
-                            </ng-container>
-                            <ng-container matColumnDef="table">
-                                <th mat-header-cell *matHeaderCellDef> Table </th>
-                                <td mat-cell *matCellDef="let r"> {{r.tableNumber}} </td>
-                            </ng-container>
-                            <ng-container matColumnDef="status">
-                                <th mat-header-cell *matHeaderCellDef> Status </th>
-                                <td mat-cell *matCellDef="let r"> <span
-                                        style="background: #e6faf5; color: #01b574; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">{{r.status}}</span>
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="actions">
-                                <th mat-header-cell *matHeaderCellDef> Actions </th>
-                                <td mat-cell *matCellDef="let r">
-                                    <button mat-icon-button><mat-icon>more_vert</mat-icon></button>
-                                </td>
-                            </ng-container>
-                            <tr mat-header-row *matHeaderRowDef="reservationColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: reservationColumns;"></tr>
-                        </table>
-                    </mat-card-content>
-                </mat-card>
+                <mat-tab-group class="modern-tabs">
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <span class="flex items-center gap-2">
+                                <mat-icon>upcoming</mat-icon> Ongoing
+                                <span class="badge"
+                                    *ngIf="ongoingDashboardReservations.length > 0">{{ongoingDashboardReservations.length}}</span>
+                            </span>
+                        </ng-template>
+                        <div class="py-4">
+                            <ng-container
+                                *ngTemplateOutlet="resTable; context: { $implicit: ongoingDashboardReservations }"></ng-container>
+                        </div>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <span class="flex items-center gap-2">
+                                <mat-icon>history</mat-icon> Past
+                            </span>
+                        </ng-template>
+                        <div class="py-4">
+                            <ng-container
+                                *ngTemplateOutlet="resTable; context: { $implicit: pastDashboardReservations }"></ng-container>
+                        </div>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <span class="flex items-center gap-2">
+                                <mat-icon>list</mat-icon> All
+                            </span>
+                        </ng-template>
+                        <div class="py-4">
+                            <ng-container
+                                *ngTemplateOutlet="resTable; context: { $implicit: reservations }"></ng-container>
+                        </div>
+                    </mat-tab>
+                </mat-tab-group>
+
+                <ng-template #resTable let-data>
+                    <div *ngIf="data.length === 0" class="empty-state py-20 text-center">
+                        <mat-icon class="text-6xl text-gray-100">event_busy</mat-icon>
+                        <p class="text-gray-400 mt-4 font-bold">No reservations found here.</p>
+                    </div>
+                    <mat-card class="modern-card" *ngIf="data.length > 0">
+                        <mat-card-content class="p-0">
+                            <table mat-table [dataSource]="data" style="width: 100%;">
+                                <ng-container matColumnDef="date">
+                                    <th mat-header-cell *matHeaderCellDef> Date </th>
+                                    <td mat-cell *matCellDef="let r"> {{r.reservation_date | date:'MMM d'}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="time">
+                                    <th mat-header-cell *matHeaderCellDef> Time </th>
+                                    <td mat-cell *matCellDef="let r"> {{r.reservation_time}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="name">
+                                    <th mat-header-cell *matHeaderCellDef> Name </th>
+                                    <td mat-cell *matCellDef="let r" style="font-weight: 700; color: #1b2559;">
+                                        {{r.customer_name}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="phone">
+                                    <th mat-header-cell *matHeaderCellDef> Phone </th>
+                                    <td mat-cell *matCellDef="let r"> {{r.customer_phone}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="guests">
+                                    <th mat-header-cell *matHeaderCellDef> Guests </th>
+                                    <td mat-cell *matCellDef="let r"> {{r.party_size}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="table">
+                                    <th mat-header-cell *matHeaderCellDef> Table </th>
+                                    <td mat-cell *matCellDef="let r"> {{r.table_id || 'N/A'}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="status">
+                                    <th mat-header-cell *matHeaderCellDef> Status </th>
+                                    <td mat-cell *matCellDef="let r">
+                                        <span class="status-badge" [ngClass]="r.status.toLowerCase()"
+                                            style="padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                                            {{r.status}}
+                                            <mat-icon *ngIf="r.status === 'Cancelled'"
+                                                [matTooltip]="'By ' + r.cancelled_by + ': ' + (r.cancellation_reason || 'No reason')"
+                                                style="font-size: 14px; width:14px; height:14px; vertical-align: middle; cursor: help;">
+                                                info
+                                            </mat-icon>
+                                        </span>
+                                    </td>
+                                </ng-container>
+                                <ng-container matColumnDef="actions">
+                                    <th mat-header-cell *matHeaderCellDef> Actions </th>
+                                    <td mat-cell *matCellDef="let r">
+                                        <button mat-icon-button [matMenuTriggerFor]="resMenu">
+                                            <mat-icon>more_vert</mat-icon>
+                                        </button>
+                                        <mat-menu #resMenu="matMenu">
+                                            <button mat-menu-item (click)="viewTicket(r)">
+                                                <mat-icon>receipt</mat-icon>
+                                                <span>View Ticket</span>
+                                            </button>
+                                            <button mat-menu-item (click)="editReservation(r)"
+                                                *ngIf="r.status !== 'Cancelled' && r.status !== 'Ended'">
+                                                <mat-icon>edit</mat-icon>
+                                                <span>Edit / Assign</span>
+                                            </button>
+                                            <button mat-menu-item (click)="cancelReservation(r)"
+                                                *ngIf="r.status !== 'Cancelled' && r.status !== 'Ended'"
+                                                style="color: #ee5d50;">
+                                                <mat-icon style="color: #ee5d50;">cancel</mat-icon>
+                                                <span>Cancel</span>
+                                            </button>
+                                            <button mat-menu-item (click)="deleteReservation(r)"
+                                                *ngIf="r.status === 'Cancelled' || r.status === 'Ended'"
+                                                style="color: #ee5d50;">
+                                                <mat-icon style="color: #ee5d50;">delete_outline</mat-icon>
+                                                <span>Delete Permanently</span>
+                                            </button>
+                                        </mat-menu>
+                                    </td>
+                                </ng-container>
+                                <tr mat-header-row *matHeaderRowDef="reservationColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: reservationColumns;"
+                                    [class.row-ended]="row.status === 'Ended'"
+                                    [class.row-cancelled]="row.status === 'Cancelled'"></tr>
+                            </table>
+                        </mat-card-content>
+                    </mat-card>
+                </ng-template>
             </div>
 
             <div *ngIf="activeTab === 'analytics'" class="tab-content">
@@ -343,6 +589,26 @@
                                         <mat-slide-toggle [(ngModel)]="settings.acceptReservations"
                                             color="warn"></mat-slide-toggle>
                                     </div>
+                                    <div *ngIf="settings.acceptReservations"
+                                        style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; background: #f4f7fe; border: 1px dashed #4318ff;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <strong style="color: #4318ff; display: block;">Paid
+                                                    Reservation</strong>
+                                                <small style="color: #a3aed0;">Charge fee for bookings</small>
+                                            </div>
+                                            <mat-slide-toggle [(ngModel)]="settings.isPaidReservation"
+                                                color="primary"></mat-slide-toggle>
+                                        </div>
+                                        <mat-form-field appearance="outline" *ngIf="settings.isPaidReservation"
+                                            style="width: 100%; margin-top: 8px;">
+                                            <mat-label>Reservation Fee (INR)</mat-label>
+                                            <input matInput type="number" [(ngModel)]="settings.reservationFee"
+                                                placeholder="e.g. 500">
+                                            <mat-icon matSuffix>payments</mat-icon>
+                                        </mat-form-field>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -394,16 +660,58 @@
                                     </mat-form-field>
                                 </div>
                                 <div>
-                                    <mat-form-field appearance="outline" style="width: 100%;">
-                                        <mat-label>Hero Image URL</mat-label>
-                                        <input matInput [(ngModel)]="configuration.heroImage">
-                                    </mat-form-field>
+                                    <!-- Logo Upload -->
+                                    <div style="margin-bottom: 24px;">
+                                        <label
+                                            style="color: #1b2559; font-weight: 600; margin-bottom: 8px; display: block;">Restaurant
+                                            Logo</label>
+                                        <div style="display: flex; align-items: center; gap: 16px;">
+                                            <div
+                                                style="width: 80px; height: 80px; border-radius: 12px; overflow: hidden; border: 1px solid #e0e5f2; background: #f8faff;">
+                                                <img [src]="configuration.logo"
+                                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                            </div>
+                                            <div>
+                                                <button mat-stroked-button color="primary" (click)="logoInput.click()">
+                                                    <mat-icon>upload</mat-icon> Upload Logo
+                                                </button>
+                                                <input #logoInput type="file" (change)="onLogoSelect($event)"
+                                                    style="display: none;" accept="image/*">
+                                                <p style="margin: 4px 0 0 0; font-size: 0.75rem; color: #a3aed0;">
+                                                    Recommended 1:1 ratio</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hero Image Upload -->
+                                    <div style="margin-bottom: 24px;">
+                                        <label
+                                            style="color: #1b2559; font-weight: 600; margin-bottom: 8px; display: block;">Hero
+                                            Background Image</label>
+                                        <div
+                                            style="height: 140px; width: 100%; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                                            <img [src]="configuration.heroImage"
+                                                style="width: 100%; height: 100%; object-fit: cover;">
+                                            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;"
+                                                class="hero-overlay">
+                                                <button mat-raised-button color="accent"
+                                                    (click)="heroInput.click()">Change Image</button>
+                                            </div>
+                                            <button mat-mini-fab color="primary" (click)="heroInput.click()"
+                                                style="position: absolute; bottom: 12px; right: 12px; z-index: 2;">
+                                                <mat-icon>edit</mat-icon>
+                                            </button>
+                                        </div>
+                                        <input #heroInput type="file" (change)="onHeroImageSelect($event)"
+                                            style="display: none;" accept="image/*">
+                                    </div>
+
                                     <div style="margin-top: 16px;">
                                         <label
                                             style="color: #1b2559; font-weight: 600; margin-bottom: 8px; display: block;">Theme
                                             Color</label>
                                         <input type="color" [(ngModel)]="configuration.themeColor"
-                                            style="width: 100%; height: 50px; cursor: pointer;">
+                                            style="width: 100%; height: 50px; cursor: pointer; border-radius: 8px; border: 1px solid #e0e5f2;">
                                     </div>
                                 </div>
                             </div>
@@ -418,53 +726,121 @@
                                 <h3 style="color: #1b2559; margin-bottom: 32px; font-weight: 800; font-size: 1.25rem;">
                                     Media Gallery</h3>
 
-                                <div style="margin-bottom: 32px;">
-                                    <h4 style="color: #1b2559; margin-bottom: 16px; font-weight: 700;">Gallery Images
-                                    </h4>
+                                <!-- Gallery Section -->
+                                <div style="margin-bottom: 40px;">
                                     <div
-                                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px;">
-                                        <div *ngFor="let img of configuration.galleryImages; let i = index"
-                                            style="position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                            <img [src]="img" style="width: 100%; height: 100%; object-fit: cover;">
-                                            <button mat-icon-button color="warn" (click)="removeGalleryImage(i)"
-                                                style="position: absolute; top: 4px; right: 4px; background: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                                                <mat-icon
-                                                    style="font-size: 18px; width: 18px; height: 18px; line-height: 18px;">close</mat-icon>
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                        <h4 style="color: #1b2559; margin: 0; font-weight: 700;">Gallery Images</h4>
+                                        <button mat-stroked-button color="primary" (click)="addMediaGroup('gallery')">
+                                            <mat-icon>add_circle_outline</mat-icon> Add Section
+                                        </button>
+                                    </div>
+
+                                    <div *ngFor="let group of galleryGroups; let gIndex = index"
+                                        style="margin-bottom: 24px; background: #fff; border: 1px solid #e0e6ed; border-radius: 12px; padding: 16px;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                            <mat-form-field appearance="outline" style="width: 300px;">
+                                                <mat-label>Section Name</mat-label>
+                                                <input matInput [(ngModel)]="group.name" (blur)="saveConfiguration()"
+                                                    placeholder="e.g. Interior, Events">
+                                            </mat-form-field>
+                                            <button mat-icon-button color="warn"
+                                                (click)="deleteMediaGroup('gallery', gIndex)"
+                                                matTooltip="Delete Section">
+                                                <mat-icon>delete_outline</mat-icon>
                                             </button>
                                         </div>
-                                        <div style="border: 2px dashed #a3aed0; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; height: 130px; background: #f8faff; transition: all 0.2s;"
-                                            (click)="galleryInput.click()">
-                                            <mat-icon
-                                                style="color: #a3aed0; font-size: 32px; width: 32px; height: 32px; margin-bottom: 8px;">add_photo_alternate</mat-icon>
-                                            <span style="font-size: 0.8rem; color: #a3aed0; font-weight: 600;">Add
-                                                Photo</span>
-                                            <input #galleryInput type="file" (change)="onGallerySelect($event)"
-                                                style="display: none;" accept="image/*">
+
+                                        <div
+                                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px;">
+                                            <div *ngFor="let img of group.images; let i = index"
+                                                style="position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                                <img [src]="img" style="width: 100%; height: 100%; object-fit: cover;">
+                                                <button mat-icon-button color="warn"
+                                                    (click)="removeGalleryImage(gIndex, i)"
+                                                    style="position: absolute; top: 4px; right: 4px; background: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <mat-icon
+                                                        style="font-size: 18px; width: 18px; height: 18px; line-height: 18px;">close</mat-icon>
+                                                </button>
+                                            </div>
+                                            <!-- Add Photo Button -->
+                                            <div style="border: 2px dashed #a3aed0; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; height: 130px; background: #f8faff; transition: all 0.2s;"
+                                                (click)="galleryInput.click()">
+                                                <mat-icon
+                                                    style="color: #a3aed0; font-size: 32px; width: 32px; height: 32px; margin-bottom: 8px;">add_photo_alternate</mat-icon>
+                                                <span style="font-size: 0.8rem; color: #a3aed0; font-weight: 600;">Add
+                                                    Photos</span>
+                                                <input #galleryInput type="file" multiple
+                                                    (change)="onGallerySelect($event, gIndex)" style="display: none;"
+                                                    accept="image/*">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
+                                <!-- Menu Section -->
                                 <div>
-                                    <h4 style="color: #1b2559; margin-bottom: 16px; font-weight: 700;">Menu Cards</h4>
                                     <div
-                                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px;">
-                                        <div *ngFor="let img of configuration.menuImages; let i = index"
-                                            style="position: relative; aspect-ratio: 3/4; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                            <img [src]="img" style="width: 100%; height: 100%; object-fit: cover;">
-                                            <button mat-icon-button color="warn" (click)="removeMenuImage(i)"
-                                                style="position: absolute; top: 4px; right: 4px; background: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                                                <mat-icon
-                                                    style="font-size: 18px; width: 18px; height: 18px; line-height: 18px;">close</mat-icon>
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                        <h4 style="color: #1b2559; margin: 0; font-weight: 700;">Menu Cards</h4>
+                                        <button mat-stroked-button color="primary" (click)="addMediaGroup('menu')">
+                                            <mat-icon>add_circle_outline</mat-icon> Add Menu Section
+                                        </button>
+                                    </div>
+
+                                    <div *ngFor="let group of menuGroups; let gIndex = index"
+                                        style="margin-bottom: 24px; background: #fff; border: 1px solid #e0e6ed; border-radius: 12px; padding: 16px;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                            <mat-form-field appearance="outline" style="width: 300px;">
+                                                <mat-label>Menu Section</mat-label>
+                                                <input matInput [(ngModel)]="group.name" (blur)="saveConfiguration()"
+                                                    placeholder="e.g. Starters, Main Course">
+                                            </mat-form-field>
+                                            <button mat-icon-button color="warn"
+                                                (click)="deleteMediaGroup('menu', gIndex)" matTooltip="Delete Section">
+                                                <mat-icon>delete_outline</mat-icon>
                                             </button>
                                         </div>
-                                        <div style="border: 2px dashed #a3aed0; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; height: 200px; background: #f8faff;"
-                                            (click)="menuInput.click()">
-                                            <mat-icon
-                                                style="color: #a3aed0; font-size: 32px; width: 32px; height: 32px; margin-bottom: 8px;">restaurant_menu</mat-icon>
-                                            <span style="font-size: 0.8rem; color: #a3aed0; font-weight: 600;">Add
-                                                Menu</span>
-                                            <input #menuInput type="file" (change)="onMenuSelect($event)"
-                                                style="display: none;" accept="image/*">
+
+                                        <div
+                                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px;">
+                                            <div *ngFor="let img of group.images; let i = index"
+                                                style="position: relative; aspect-ratio: 3/4; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #f8faff;">
+
+                                                <!-- Image Display -->
+                                                <img *ngIf="!img.includes('application/pdf')" [src]="img"
+                                                    style="width: 100%; height: 100%; object-fit: cover;">
+
+                                                <!-- PDF Display Placeholder -->
+                                                <div *ngIf="img.includes('application/pdf')"
+                                                    style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #e53935;">
+                                                    <mat-icon
+                                                        style="font-size: 48px; width: 48px; height: 48px;">picture_as_pdf</mat-icon>
+                                                    <span
+                                                        style="font-size: 0.8rem; font-weight: 600; margin-top: 8px;">PDF
+                                                        Document</span>
+                                                </div>
+
+                                                <button mat-icon-button color="warn"
+                                                    (click)="removeMenuImage(gIndex, i)"
+                                                    style="position: absolute; top: 4px; right: 4px; background: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <mat-icon
+                                                        style="font-size: 18px; width: 18px; height: 18px; line-height: 18px;">close</mat-icon>
+                                                </button>
+                                            </div>
+                                            <!-- Add Menu Button -->
+                                            <div style="border: 2px dashed #a3aed0; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; height: 200px; background: #f8faff;"
+                                                (click)="menuInput.click()">
+                                                <mat-icon
+                                                    style="color: #a3aed0; font-size: 32px; width: 32px; height: 32px; margin-bottom: 8px;">restaurant_menu</mat-icon>
+                                                <span style="font-size: 0.8rem; color: #a3aed0; font-weight: 600;">Add
+                                                    Menu Pages</span>
+                                                <input #menuInput type="file" multiple
+                                                    (change)="onMenuSelect($event, gIndex)" style="display: none;"
+                                                    accept="image/*,application/pdf">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -521,3 +897,57 @@
         </mat-sidenav-content>
     </mat-sidenav-container>
 </div>
+
+<ng-template #ticketDialog let-data>
+    <div class="ticket-wrapper"
+        style="padding: 24px; background: white; font-family: 'Courier New', Courier, monospace;">
+        <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 16px; margin-bottom: 16px;">
+            <h2 style="margin: 0; text-transform: uppercase;">{{ currentRestaurant?.name || 'Restaurant' }}</h2>
+            <p style="margin: 4px 0 0; font-size: 0.8rem;">Reservation Ticket</p>
+            <h3 style="margin: 12px 0 0; font-size: 1.5rem;">#{{ data.id }}</h3>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <p style="display: flex; justify-content: space-between; margin: 4px 0;">
+                <span>Date:</span> <strong>{{ data.reservation_date | date:'mediumDate' }}</strong>
+            </p>
+            <p style="display: flex; justify-content: space-between; margin: 4px 0;">
+                <span>Time:</span> <strong>{{ data.reservation_time }}</strong>
+            </p>
+            <p style="display: flex; justify-content: space-between; margin: 4px 0;">
+                <span>Guests:</span> <strong>{{ data.party_size }} Adults</strong>
+            </p>
+            <p style="display: flex; justify-content: space-between; margin: 4px 0;">
+                <span>Table:</span> <strong>{{ data.table_no || data.table_id || 'Unassigned' }}</strong>
+            </p>
+        </div>
+
+        <div style="border-top: 2px dashed #ccc; border-bottom: 2px dashed #ccc; padding: 16px 0; margin-bottom: 16px;">
+            <p style="margin: 0; font-weight: bold;">Customer</p>
+            <p style="margin: 4px 0;">{{ data.customer_name }}</p>
+            <p style="margin: 4px 0;">{{ data.customer_phone }}</p>
+            <p style="margin: 4px 0; font-size: 0.8rem; color: #666;" *ngIf="data.customer_email">{{ data.customer_email
+                }}</p>
+        </div>
+
+        <div *ngIf="data.special_requests" style="margin-bottom: 16px;">
+            <p style="margin: 0; font-weight: bold;">Notes</p>
+            <p style="margin: 4px 0; font-style: italic;">"{{ data.special_requests }}"</p>
+        </div>
+
+        <div style="margin-bottom: 16px; font-size: 0.8rem; color: #888; text-align: center;">
+            Booked On: {{ data.created_at | date:'medium' }}
+        </div>
+
+        <div style="text-align: center;">
+            <div [ngClass]="data.status.toLowerCase()"
+                style="display: inline-block; padding: 6px 12px; border-radius: 4px; border: 1px solid currentColor; font-weight: bold; text-transform: uppercase;">
+                {{ data.status }}
+            </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: center;">
+            <button mat-stroked-button [mat-dialog-close]="true">Close Ticket</button>
+        </div>
+    </div>
+</ng-template>

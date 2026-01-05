@@ -331,13 +331,23 @@
       gap: 4px;
     }
 
-    .status-badge {
+    .status-badge,
+    .type-badge {
       display: inline-block;
-      padding: 6px 16px;
+      padding: 4px 12px;
       border-radius: 50px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-badge {
       background: #eee;
+    }
+
+    .type-badge {
+      background: #667eea;
+      color: white;
     }
   }
 
