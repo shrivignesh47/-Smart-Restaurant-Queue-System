@@ -10,10 +10,23 @@ import { AdminProfileDialogComponent } from './admin-profile-dialog.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { RestaurantService, Restaurant } from '../../../core/services/restaurant.service';
 import { UserService, User } from '../../../core/services/user.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, timer, Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 interface AdminUser extends User {
   status: 'active' | 'inactive';
+}
+
+interface SystemStats {
+  uptime: number;
+  requestCount: number;
+  errorCount: number;
+  memory: { rss: number; heapUsed: number };
+  logs: any[];
+  recentActivities?: any[];
+  dbCounts?: { restaurants: number; users: number; reservations: number; };
 }
 
 @Component({
@@ -34,6 +47,10 @@ export class AdminDashboardComponent implements OnInit {
     totalBookings: 3450, // Mocked for now
     revenue: 0
   };
+
+  systemStats: SystemStats | null = null;
+  private logsSubscription: Subscription | null = null;
+  recentActivities: any[] = []; // Stores real-time activities
 
   settings = {
     maintenanceMode: false,
@@ -82,7 +99,8 @@ export class AdminDashboardComponent implements OnInit {
     private dialog: MatDialog,
     private authService: AuthService,
     private restaurantService: RestaurantService,
-    private userService: UserService
+    private userService: UserService,
+    private http: HttpClient
   ) {
     // Initialize admin profile form
     this.adminProfileForm = this.fb.group({
@@ -119,6 +137,39 @@ export class AdminDashboardComponent implements OnInit {
 
     // Load all data from API
     this.loadAllData();
+
+    // Start Real-Time Logs Polling
+    this.startLogPolling();
+  }
+
+  ngOnDestroy(): void {
+    if (this.logsSubscription) {
+      this.logsSubscription.unsubscribe();
+    }
+  }
+
+  startLogPolling() {
+    // Poll every 2 seconds
+    this.logsSubscription = timer(0, 2000).pipe(
+      switchMap(() => this.http.get<SystemStats>(`${environment.apiUrl}/admin/system-stats`))
+    ).subscribe({
+      next: (data) => {
+        this.systemStats = data;
+
+        // Update Overview Stats Real-time
+        if (data.dbCounts) {
+          this.stats.totalRestaurants = data.dbCounts.restaurants;
+          this.stats.totalUsers = data.dbCounts.users;
+          this.stats.totalBookings = data.dbCounts.reservations;
+        }
+
+        // Update Activity Feed
+        if (data.recentActivities) {
+          this.recentActivities = data.recentActivities;
+        }
+      },
+      error: (err) => console.error('Stats polling failed', err)
+    });
   }
 
   loadAllData(): void {
