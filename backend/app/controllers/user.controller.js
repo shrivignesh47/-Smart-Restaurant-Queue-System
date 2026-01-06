@@ -1,10 +1,8 @@
 const User = require("../models/user.model.js");
 
-// Create and Save a new User
 exports.create = (req, res) => {
     const bcrypt = require("bcryptjs");
 
-    // Validate request
     if (!req.body || !req.body.contact_info) {
         res.status(400).send({
             message: "Content can not be empty!"
@@ -12,13 +10,11 @@ exports.create = (req, res) => {
         return;
     }
 
-    // Hash password if provided
     let hashedPassword = null;
     if (req.body.password) {
         hashedPassword = bcrypt.hashSync(req.body.password, 10);
     }
 
-    // Create a User
     const user = {
         name: req.body.name,
         role: req.body.role || "Customer",
@@ -28,7 +24,6 @@ exports.create = (req, res) => {
         created_at: new Date()
     };
 
-    // Save User in the database
     User.create(user, (err, data) => {
         if (err)
             res.status(500).send({
@@ -36,14 +31,12 @@ exports.create = (req, res) => {
                     err.message || "Some error occurred while creating the User."
             });
         else {
-            // Remove password from response
             const { password, ...userWithoutPassword } = data;
             res.send(userWithoutPassword);
         }
     });
 };
 
-// Retrieve all Users from the database (with optional role filter).
 exports.findAll = (req, res) => {
     const role = req.query.role;
     User.getAll(role, (err, data) => {
@@ -56,7 +49,6 @@ exports.findAll = (req, res) => {
     });
 };
 
-// Find a single User with a id
 exports.findOne = (req, res) => {
     User.findById(req.params.id, (err, data) => {
         if (err) {
@@ -73,9 +65,7 @@ exports.findOne = (req, res) => {
     });
 };
 
-// Update a User identified by the id in the request
 exports.update = (req, res) => {
-    // Validate request
     if (!req.body) {
         res.status(400).send({
             message: "Content can not be empty!"
@@ -101,7 +91,6 @@ exports.update = (req, res) => {
     );
 };
 
-// Delete a User with the specified id in the request
 exports.delete = (req, res) => {
     User.remove(req.params.id, (err, data) => {
         if (err) {
@@ -118,7 +107,6 @@ exports.delete = (req, res) => {
     });
 };
 
-// Update Admin Profile (username, name, password)
 exports.updateAdminProfile = (req, res) => {
     console.log('[AdminProfile] Update request received');
     console.log('[AdminProfile] User ID from params:', req.params.id);
@@ -133,7 +121,6 @@ exports.updateAdminProfile = (req, res) => {
         return;
     }
 
-    // Only allow updating own profile or if super admin
     const userId = req.params.id;
     if (req.userId != userId && req.userRole !== 'Admin') {
         console.log('[AdminProfile] Access denied - user can only update own profile');

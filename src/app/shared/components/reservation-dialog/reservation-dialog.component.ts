@@ -72,7 +72,6 @@ export class ReservationDialogComponent {
     private dialogRef: MatDialogRef<ReservationDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Reservation
   ) {
-    // Format date for input type="date" (YYYY-MM-DD)
     let formattedDate = '';
     if (data.reservation_date) {
       formattedDate = new Date(data.reservation_date).toISOString().split('T')[0];
@@ -93,7 +92,6 @@ export class ReservationDialogComponent {
       cancelled_by: [data.cancelled_by || '']
     });
 
-    // Toggle required validator for cancellation reason
     this.resForm.get('status')?.valueChanges.subscribe(status => {
       const reasonControl = this.resForm.get('cancellation_reason');
       if (status === 'Cancelled') {

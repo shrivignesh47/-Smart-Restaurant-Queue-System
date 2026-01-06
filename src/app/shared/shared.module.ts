@@ -18,6 +18,7 @@ import { MobileLoginDialogComponent } from './components/mobile-login-dialog/mob
 import { CancellationDialogComponent } from './components/cancellation-dialog/cancellation-dialog.component';
 import { TicketDialogComponent } from './components/ticket-dialog/ticket-dialog.component';
 import { ScannerDialogComponent } from './components/scanner-dialog/scanner-dialog.component';
+import { SeatCustomerDialogComponent } from './components/seat-customer-dialog/seat-customer-dialog.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 
@@ -37,7 +38,8 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
     MobileLoginDialogComponent,
     CancellationDialogComponent,
     TicketDialogComponent,
-    ScannerDialogComponent
+    ScannerDialogComponent,
+    SeatCustomerDialogComponent
   ],
   imports: [
     CommonModule,
@@ -68,8 +70,10 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
     CancellationDialogComponent,
     TicketDialogComponent,
     ScannerDialogComponent,
+    SeatCustomerDialogComponent,
     QRCodeModule,
     ZXingScannerModule
   ]
 })
 export class SharedModule { }
+

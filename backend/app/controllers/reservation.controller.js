@@ -9,7 +9,6 @@ exports.create = (req, res) => {
 
     const phone = req.body.customer_phone;
 
-    // Helper function to create the reservation
     const createReservationWithUser = (userId) => {
         const reservation = new Reservation({
             restaurant_id: req.body.restaurant_id,
@@ -34,17 +33,14 @@ exports.create = (req, res) => {
         });
     };
 
-    // If user_id is provided from frontend (logged in user), use it directly
     if (req.body.user_id) {
         createReservationWithUser(req.body.user_id);
         return;
     }
 
-    // Find if user exists by phone
     User.findByContactInfo(phone, (err, user) => {
         if (err) {
             if (err.kind === "not_found") {
-                // If user doesn't exist, create a simplified account
                 const newUser = {
                     name: req.body.customer_name,
                     contact_info: phone,
@@ -55,7 +51,6 @@ exports.create = (req, res) => {
                 User.create(newUser, (createErr, createdUser) => {
                     if (createErr) {
                         console.error("[Reservation Controller] Error auto-creating user:", createErr);
-                        // Still create reservation even if user creation fails (fallback)
                         createReservationWithUser(null);
                     } else {
                         createReservationWithUser(createdUser.id);
@@ -66,7 +61,6 @@ exports.create = (req, res) => {
                 createReservationWithUser(null);
             }
         } else if (user) {
-            // User exists, link to it
             createReservationWithUser(user.id);
         }
     });
@@ -107,7 +101,6 @@ exports.updateStatus = (req, res) => {
             return;
         }
 
-        // Authorization logic
         const isAdmin = req.userRole === 'Admin';
         const isManager = (req.userRole === 'RestaurantAdmin' || req.userRole === 'Admin') && (isAdmin || req.restaurantId == reservation.restaurant_id);
         const isOwner = req.userId == reservation.user_id && req.body.status === 'Cancelled';
@@ -128,7 +121,6 @@ exports.updateStatus = (req, res) => {
             return;
         }
 
-        // Only managers/admins can update to other statuses
         if (!isAdmin && !isManager) {
             return res.status(403).send({ message: "Only managers can update reservation status." });
         }
@@ -169,7 +161,6 @@ exports.delete = (req, res) => {
             return;
         }
 
-        // Authorization logic: Only Admin or relevant Restaurant Manager
         const isAdmin = req.userRole === 'Admin';
         const isManager = (req.userRole === 'RestaurantAdmin' || req.userRole === 'Admin') && (isAdmin || req.restaurantId == reservation.restaurant_id);
 

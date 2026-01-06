@@ -26,6 +26,8 @@ export interface QueueEntry {
     estimated_wait_time: number;
     position: number;
     status: 'Waiting' | 'Called' | 'Seated' | 'Cancelled';
+    assigned_table_id?: number;
+    assigned_table_name?: string;
 }
 
 export interface Reservation {
@@ -164,16 +166,24 @@ export class TableQueueService {
         );
     }
 
-    updateQueueStatus(entryId: number, status: string): Observable<any> {
-        return this.http.patch(`${this.apiUrl}/queue/${entryId}/status`, { status }).pipe(
+    updateQueueStatus(entryId: number, status: string, tableInfo?: { tableId: number, tableName: string }): Observable<any> {
+        const payload: any = { status };
+        if (tableInfo) {
+            payload.tableId = tableInfo.tableId;
+            payload.tableName = tableInfo.tableName;
+        }
+        return this.http.patch(`${this.apiUrl}/queue/${entryId}/status`, payload).pipe(
             tap(() => {
-                // If seated/cancelled, re-load the queue to get updated positions
                 const entry = this.queueSubject.value.find(q => q.id === entryId);
                 if (entry) {
                     this.loadQueue(entry.restaurant_id).subscribe();
                 }
             })
         );
+    }
+
+    getQueueEntry(entryId: number): Observable<QueueEntry> {
+        return this.http.get<QueueEntry>(`${this.apiUrl}/queue/${entryId}`);
     }
 
     // Reservation Management

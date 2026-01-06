@@ -9,17 +9,13 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Parse requests of content-type - application/json
 app.use(express.json({ limit: '50mb' }));
 
-// Parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Initialize Database Tables
 const User = require("./app/models/user.model.js");
 const sql = require("./app/models/db.js");
 
-// System Analytics
 const systemStats = {
     startTime: Date.now(),
     requestCount: 0,
@@ -29,7 +25,6 @@ const systemStats = {
 
 const activityLog = []; // Real-time activity stream
 
-// Analytics Middleware
 app.use((req, res, next) => {
     if (req.path.includes('/system-stats')) return next();
 
@@ -50,7 +45,6 @@ app.use((req, res, next) => {
         systemStats.requestCount++;
         if (res.statusCode >= 400) systemStats.errorCount++;
 
-        // Real-Time Activity Inference
         if (res.statusCode >= 200 && res.statusCode < 300) {
             let activity = null;
             if (req.method === 'POST' && req.originalUrl.includes('/restaurants')) {
@@ -71,7 +65,6 @@ app.use((req, res, next) => {
 });
 
 
-// Simple route
 app.get('/', (req, res) => {
     res.json({ message: "Welcome to Smart Restaurant Queue System API." });
 });
@@ -79,7 +72,6 @@ app.get('/', (req, res) => {
 app.get('/api/admin/system-stats', (req, res) => {
     const memory = process.memoryUsage();
 
-    // Fetch Real-Time DB Counts
     const getCount = (table) => new Promise(resolve => {
         sql.query(`SELECT COUNT(*) as c FROM ${table}`, (err, r) => resolve(err ? 0 : r[0].c));
     });
@@ -118,7 +110,6 @@ Table.initTable();
 Queue.initTable();
 Reservation.initTable();
 
-// Import routes              
 require("./app/routes/test.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/restaurant.routes")(app);
@@ -127,7 +118,6 @@ require("./app/routes/queue.routes")(app);
 require("./app/routes/reservation.routes")(app);
 require("./app/routes/scanner.routes")(app);
 
-// Set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);

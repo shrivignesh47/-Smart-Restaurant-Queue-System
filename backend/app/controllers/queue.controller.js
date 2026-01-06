@@ -9,7 +9,6 @@ exports.create = (req, res) => {
 
     const contactInfo = req.body.contact_info;
 
-    // Helper function to join the queue
     const joinQueueWithUser = (userId) => {
         const entry = new Queue({
             restaurant_id: req.body.restaurant_id,
@@ -27,11 +26,9 @@ exports.create = (req, res) => {
         });
     };
 
-    // Find if user exists by contact_info
     User.findByContactInfo(contactInfo, (err, user) => {
         if (err) {
             if (err.kind === "not_found") {
-                // Auto-create user
                 const newUser = {
                     name: req.body.customer_name,
                     contact_info: contactInfo,
@@ -64,13 +61,30 @@ exports.findAllByRestaurant = (req, res) => {
     });
 };
 
+exports.findOne = (req, res) => {
+    Queue.findById(req.params.id, (err, data) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(404).send({ message: `Queue entry not found with id ${req.params.id}.` });
+            } else {
+                res.status(500).send({ message: "Error retrieving queue entry." });
+            }
+        } else res.send(data);
+    });
+};
+
 exports.updateStatus = (req, res) => {
     if (!req.body.status) {
         res.status(400).send({ message: "Status is required!" });
         return;
     }
 
-    Queue.updateStatus(req.params.id, req.body.status, (err, data) => {
+    const tableInfo = req.body.tableId ? {
+        tableId: req.body.tableId,
+        tableName: req.body.tableName
+    } : null;
+
+    Queue.updateStatus(req.params.id, req.body.status, tableInfo, (err, data) => {
         if (err) {
             if (err.kind === "not_found") {
                 res.status(404).send({ message: `Queue entry not found.` });

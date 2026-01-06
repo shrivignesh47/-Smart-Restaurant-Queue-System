@@ -30,11 +30,9 @@ export class RestaurantsComponent implements OnInit {
 
   loadRestaurants(): void {
     this.isLoading = true;
-    // Fetch only active restaurants
     this.restaurantService.getAll({ status: 'active' }).subscribe({
       next: (data) => {
         this.restaurants = data.map(r => this.mapToDisplay(r));
-        // Extract unique cities
         const uniqueCities = new Set(this.restaurants.map(r => r.city).filter(c => c));
         this.cities = ['all', ...Array.from(uniqueCities)].sort();
 
@@ -51,17 +49,13 @@ export class RestaurantsComponent implements OnInit {
   }
 
   mapToDisplay(r: any): any {
-    // Map backend data to the format expected by the card component
     return {
       ...r,
-      // Use cover image or fallback
       image: r.cover_image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
       location: r.city || 'Tamil Nadu',
-      // Mock / Default values for missing backend fields
       rating: 4.5,
       waitTime: '10-20 mins',
       status: 'Medium', // Maps to CSS class 'medium' (Low, Medium, Busy)
-      // Convert comma-separated string to array
       cuisine: r.cuisine_type ? r.cuisine_type.split(',').map((c: string) => c.trim()) : [],
       specialties: [],
       priceRange: '₹₹',
@@ -73,7 +67,6 @@ export class RestaurantsComponent implements OnInit {
   filterRestaurants(): void {
     let filtered = [...this.restaurants];
 
-    // Filter by search query
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
       filtered = filtered.filter(r =>
@@ -84,7 +77,6 @@ export class RestaurantsComponent implements OnInit {
       );
     }
 
-    // Filter by city
     if (this.selectedCity && this.selectedCity !== 'all') {
       filtered = filtered.filter(r => r.city && r.city.toLowerCase() === this.selectedCity.toLowerCase());
     }
@@ -102,14 +94,12 @@ export class RestaurantsComponent implements OnInit {
         this.filteredRestaurants.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case 'waitTime':
-        // Mock sorting for mock wait times
         this.filteredRestaurants.sort((a, b) => parseInt(a.waitTime) - parseInt(b.waitTime));
         break;
     }
   }
 
   viewRestaurant(restaurant: any): void {
-    // Navigate using slug if available, else name
     this.router.navigate([`/${restaurant.slug || restaurant.name}`]);
   }
 }

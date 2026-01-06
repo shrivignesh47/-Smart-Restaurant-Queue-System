@@ -62,7 +62,6 @@ export class LoginDialogComponent implements OnInit, OnDestroy {
         this.loginForm.get('otp')?.setValidators([Validators.required, Validators.pattern(/^\d{6}$/)]);
         this.loginForm.get('otp')?.updateValueAndValidity();
 
-        // Show OTP in snackbar for testing (remove in production)
         const message = res.otp ? `OTP: ${res.otp}` : `OTP sent to +91 ${phone}`;
         this.snackBar.open(message, 'Close', { duration: 5000 });
 
@@ -90,7 +89,6 @@ export class LoginDialogComponent implements OnInit, OnDestroy {
 
         this.snackBar.open('Login successful!', 'Close', { duration: 2000 });
 
-        // Close dialog and pass success
         this.dialogRef.close({ success: true, user: res });
       },
       error: (err) => {
@@ -105,7 +103,6 @@ export class LoginDialogComponent implements OnInit, OnDestroy {
   resendOTP(): void {
     if (this.resendTimer > 0) return;
 
-    // Reset OTP sent flag and resend
     this.otpSent = false;
     this.sendOTP();
   }

@@ -524,28 +524,21 @@ export class TicketDialogComponent {
 
     const imgData = canvas.toDataURL('image/png');
 
-    // Create PDF in landscape orientation
     const pdf = new jsPDF('l', 'mm', 'a4');
 
-    // A4 landscape: 297mm x 210mm
     const pdfWidth = 297;
     const pdfHeight = 210;
 
-    // Calculate image dimensions to fit
-    const imgWidth = pdfWidth - 20; // 10mm margin on each side
+    const imgWidth = pdfWidth - 20;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    // Center vertically
     const x = 10;
     const y = (pdfHeight - imgHeight) / 2;
 
-    // Page 1: Ticket
     pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
 
-    // Page 2: Terms and Conditions
     pdf.addPage();
 
-    // Header
     pdf.setFillColor(27, 37, 89);
     pdf.rect(0, 0, pdfWidth, 30, 'F');
 
@@ -554,7 +547,6 @@ export class TicketDialogComponent {
     pdf.setFont('helvetica', 'bold');
     pdf.text('TERMS AND CONDITIONS', pdfWidth / 2, 18, { align: 'center' });
 
-    // Content
     pdf.setTextColor(30, 41, 59);
     let yPos = 45;
     const lineHeight = 6;
@@ -605,7 +597,6 @@ export class TicketDialogComponent {
       yPos += (lines.length * lineHeight) + 4;
     });
 
-    // Footer
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'italic');
     pdf.setTextColor(100, 116, 139);

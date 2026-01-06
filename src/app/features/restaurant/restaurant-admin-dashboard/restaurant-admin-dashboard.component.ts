@@ -12,6 +12,7 @@ import { catchError } from 'rxjs/operators';
 import { of, forkJoin } from 'rxjs';
 import { CancellationDialogComponent } from '../../../shared/components/cancellation-dialog/cancellation-dialog.component';
 import { ScannerDialogComponent } from '../../../shared/components/scanner-dialog/scanner-dialog.component';
+import { SeatCustomerDialogComponent } from '../../../shared/components/seat-customer-dialog/seat-customer-dialog.component';
 
 interface QueueCustomer {
   id: number;
@@ -554,35 +555,45 @@ export class RestaurantAdminDashboardComponent implements OnInit {
   }
 
   seatCustomer(customer: QueueEntry): void {
-    const availableTable = this.tables.find(t => t.status === 'Available' && t.capacity >= customer.party_size);
+    const dialogRef = this.dialog.open(SeatCustomerDialogComponent, {
+      width: '600px',
+      data: {
+        customerName: customer.customer_name,
+        partySize: customer.party_size,
+        tables: this.tables
+      }
+    });
 
-    if (availableTable) {
-      forkJoin({
-        tableUpdate: this.tableQueueService.updateTableStatus(availableTable.id, 'Occupied', {
-          booked_by: customer.customer_name,
-          ticket_id: `Q-${customer.id}`
-        }),
-        queueUpdate: this.tableQueueService.updateQueueStatus(customer.id, 'Seated')
-      }).subscribe({
-        next: () => {
-          this.snackBar.open(`${customer.customer_name} seated at ${availableTable.name}`, 'Close', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.tableId) {
+        const selectedTable = this.tables.find(t => t.id === result.tableId);
+        if (selectedTable) {
+          forkJoin({
+            tableUpdate: this.tableQueueService.updateTableStatus(selectedTable.id, 'Occupied', {
+              booked_by: customer.customer_name,
+              ticket_id: `Q-${customer.id}`
+            }),
+            queueUpdate: this.tableQueueService.updateQueueStatus(customer.id, 'Seated', {
+              tableId: result.tableId,
+              tableName: result.tableName
+            })
+          }).subscribe({
+            next: () => {
+              this.snackBar.open(`${customer.customer_name} seated at ${result.tableName}`, 'Close', {
+                duration: 3000,
+                panelClass: ['success-snackbar']
+              });
+              if (this.currentRestaurant?.id) this.loadRealTimeData(this.currentRestaurant.id);
+              this.activeTab = 'tables';
+            },
+            error: (err) => {
+              console.error('Error seating customer:', err);
+              this.snackBar.open('Error updating status', 'Close', { duration: 3000 });
+            }
           });
-          if (this.currentRestaurant?.id) this.loadRealTimeData(this.currentRestaurant.id);
-          this.activeTab = 'tables';
-        },
-        error: (err) => {
-          console.error('Error seating customer:', err);
-          this.snackBar.open('Error updating status', 'Close', { duration: 3000 });
         }
-      });
-    } else {
-      this.snackBar.open('No available tables for this party size', 'Close', {
-        duration: 3000,
-        panelClass: ['error-snackbar']
-      });
-    }
+      }
+    });
   }
 
   removeFromQueue(customer: QueueEntry): void {

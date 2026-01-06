@@ -21,7 +21,6 @@ export class HttpInterceptorService implements HttpInterceptor {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          // Auto logout if 401 response returned from api
           this.authService.logout();
         }
         return throwError(() => error);

@@ -12,18 +12,14 @@ exports.sendOtp = (req, res) => {
 
     const contact_info = req.body.contact_info;
 
-    // Generate 6 digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Create a temporary JWT that holds the OTP and Phone validation
-    // This token is valid for 5 minutes
     const otpToken = jwt.sign(
         { contact_info: contact_info, otp: otp },
         config.secret,
-        { expiresIn: 300 } // 5 minutes
+        { expiresIn: 300 }
     );
 
-    // MOCK SENDING OTP
     console.log(`[MOCK SMS] Sending OTP ${otp} to ${contact_info}`);
 
     res.send({
@@ -43,7 +39,6 @@ exports.verifyOtpAndLogin = (req, res) => {
 
     const { contact_info, otp, otpToken } = req.body;
 
-    // Verify the OTP Token
     jwt.verify(otpToken, config.secret, (err, decoded) => {
         if (err) {
             return res.status(401).send({
@@ -51,25 +46,21 @@ exports.verifyOtpAndLogin = (req, res) => {
             });
         }
 
-        // Check if the token belongs to the same phone number
         if (decoded.contact_info !== contact_info) {
             return res.status(401).send({
                 message: "OTP Token does not match contact info!"
             });
         }
 
-        // Check if the OTP matches
         if (decoded.otp !== otp) {
             return res.status(401).send({
                 message: "Invalid OTP!"
             });
         }
 
-        // OTP is valid. Now handle User Login/Creation
         User.findByContactInfo(contact_info, (err, user) => {
             if (err) {
                 if (err.kind === "not_found") {
-                    // Create new customer
                     const newUser = new User({
                         name: "New Customer",
                         role: "Customer",
@@ -87,7 +78,6 @@ exports.verifyOtpAndLogin = (req, res) => {
                     res.status(500).send({ message: "Error retrieving user." });
                 }
             } else {
-                // User exists
                 generateTokenAndResponse(user, res);
             }
         });
@@ -115,7 +105,6 @@ function generateTokenAndResponse(user, res) {
     });
 }
 
-// Username/Password Login (for Admin and Restaurant users)
 exports.login = (req, res) => {
     if (!req.body.username || !req.body.password) {
         res.status(400).send({
@@ -127,7 +116,6 @@ exports.login = (req, res) => {
     const { username, password } = req.body;
     const bcrypt = require('bcryptjs');
 
-    // Find user by contact_info (username)
     User.findByContactInfo(username, (err, user) => {
         if (err) {
             if (err.kind === "not_found") {
@@ -140,14 +128,12 @@ exports.login = (req, res) => {
             });
         }
 
-        // Check if user has a password (Admin/RestaurantAdmin/RestaurantStaff)
         if (!user.password) {
             return res.status(400).send({
                 message: "This user cannot login with password. Please use OTP login."
             });
         }
 
-        // Verify password
         const passwordIsValid = bcrypt.compareSync(password, user.password);
 
         if (!passwordIsValid) {
@@ -156,7 +142,6 @@ exports.login = (req, res) => {
             });
         }
 
-        // Generate token and send response
         generateTokenAndResponse(user, res);
     });
 };

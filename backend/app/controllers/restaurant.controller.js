@@ -2,7 +2,6 @@ const Restaurant = require("../models/restaurant.model.js");
 const User = require("../models/user.model.js");
 const bcrypt = require("bcryptjs");
 
-// Create and Save a new Restaurant
 exports.create = (req, res) => {
     if (!req.body) {
         res.status(400).send({
@@ -11,7 +10,6 @@ exports.create = (req, res) => {
         return;
     }
 
-    // Generate slug from name if not provided
     const slug = req.body.slug || req.body.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -36,7 +34,6 @@ exports.create = (req, res) => {
         created_by: req.userId // From JWT middleware
     });
 
-    // Save Restaurant in the database
     Restaurant.create(restaurant, (err, restaurantData) => {
         if (err) {
             res.status(500).send({
@@ -45,7 +42,6 @@ exports.create = (req, res) => {
             return;
         }
 
-        // If manager credentials provided, create user
         if (req.body.managerUsername && req.body.managerPassword) {
             const hashedPassword = bcrypt.hashSync(req.body.managerPassword, 10);
 
@@ -58,7 +54,6 @@ exports.create = (req, res) => {
                 created_at: new Date()
             };
 
-            // Insert into users table
             const sql = require("../models/db.js");
             sql.query("INSERT INTO users SET ?", managerUser, (userErr, userRes) => {
                 if (userErr) {
@@ -83,7 +78,6 @@ exports.create = (req, res) => {
     });
 };
 
-// Retrieve all Restaurants
 exports.findAll = (req, res) => {
     const filters = {
         status: req.query.status,
@@ -101,7 +95,6 @@ exports.findAll = (req, res) => {
     });
 };
 
-// Find a single Restaurant by ID
 exports.findOne = (req, res) => {
     Restaurant.findById(req.params.id, (err, data) => {
         if (err) {
@@ -120,7 +113,6 @@ exports.findOne = (req, res) => {
     });
 };
 
-// Find a single Restaurant by slug
 exports.findBySlug = (req, res) => {
     Restaurant.findBySlug(req.params.slug, (err, data) => {
         if (err) {
@@ -139,7 +131,6 @@ exports.findBySlug = (req, res) => {
     });
 };
 
-// Update a Restaurant by ID
 exports.update = (req, res) => {
     if (!req.body) {
         res.status(400).send({
@@ -148,14 +139,12 @@ exports.update = (req, res) => {
         return;
     }
 
-    // Security check: RestaurantAdmin can only update their own restaurant
     if (req.userRole === "RestaurantAdmin" && req.params.id != req.restaurantId) {
         return res.status(403).send({
             message: "Unauthorized! You can only update your own restaurant."
         });
     }
 
-    // First find the existing restaurant to preserve fields not included in the update
     Restaurant.findById(req.params.id, (err, existingData) => {
         if (err) {
             if (err.kind === "not_found") {
@@ -170,7 +159,6 @@ exports.update = (req, res) => {
             return;
         }
 
-        // Generate slug if name changed, otherwise preserve existing
         let slug = existingData.slug;
         if (req.body.name && req.body.name !== existingData.name) {
             slug = req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -179,7 +167,6 @@ exports.update = (req, res) => {
             slug = req.body.slug;
         }
 
-        // Handle JSON fields for gallery and menu images
         let galleryImages = req.body.gallery_images !== undefined ? req.body.gallery_images : existingData.gallery_images;
         if (Array.isArray(galleryImages)) {
             galleryImages = JSON.stringify(galleryImages);
@@ -230,7 +217,6 @@ exports.update = (req, res) => {
     });
 };
 
-// Delete a Restaurant by ID
 exports.delete = (req, res) => {
     Restaurant.remove(req.params.id, (err, data) => {
         if (err) {
@@ -249,9 +235,7 @@ exports.delete = (req, res) => {
     });
 };
 
-// Get Restaurant Statistics
 exports.getStats = (req, res) => {
-    // Security check: RestaurantAdmin can only view stats for their own restaurant
     if (req.userRole === "RestaurantAdmin" && req.params.id != req.restaurantId) {
         return res.status(403).send({
             message: "Unauthorized! You can only view statistics for your own restaurant."
@@ -269,7 +253,6 @@ exports.getStats = (req, res) => {
     });
 };
 
-// Update scanner access key
 exports.updateScannerKey = (req, res) => {
     const restaurantId = req.params.id;
     const { scannerKey } = req.body;
@@ -280,7 +263,6 @@ exports.updateScannerKey = (req, res) => {
         });
     }
 
-    // Update only the scanner_access_key field
     const sql = require("../models/db.js");
     sql.query(
         "UPDATE restaurants SET scanner_access_key = ?, scanner_key_updated_at = NOW() WHERE id = ?",
@@ -305,9 +287,7 @@ exports.updateScannerKey = (req, res) => {
         }
     );
 };
-// Get scanner access key (Restaurant Admin only)
 exports.getScannerKey = (req, res) => {
-    // Security check: RestaurantAdmin can only get their own restaurant's key
     if (req.userRole === "RestaurantAdmin" && req.params.id != req.restaurantId) {
         return res.status(403).send({
             message: "Unauthorized! You can only access your own restaurant's key."

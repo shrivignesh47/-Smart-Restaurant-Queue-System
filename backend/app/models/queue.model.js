@@ -56,43 +56,68 @@ Queue.getAllByRestaurant = (restaurantId, result) => {
     );
 };
 
-Queue.updateStatus = (id, status, result) => {
-    sql.query(
-        "UPDATE queue SET status = ? WHERE id = ?",
-        [status, id],
-        (err, res) => {
-            if (err) {
-                console.log("error: ", err);
-                result(null, err);
-                return;
-            }
-
-            if (res.affectedRows == 0) {
-                result({ kind: "not_found" }, null);
-                return;
-            }
-
-            // If entry is Seated or Cancelled, we need to reorder others
-            if (status === 'Seated' || status === 'Cancelled') {
-                // Get the entry to know its restaurant and position
-                sql.query("SELECT restaurant_id, position FROM queue WHERE id = ?", [id], (subErr, subRes) => {
-                    if (!subErr && subRes.length > 0) {
-                        const { restaurant_id, position } = subRes[0];
-                        // Shift everyone above this position down
-                        sql.query(
-                            "UPDATE queue SET position = position - 1, estimated_wait_time = (position - 1) * 5 WHERE restaurant_id = ? AND status = 'Waiting' AND position > ?",
-                            [restaurant_id, position],
-                            (shiftErr, shiftRes) => {
-                                if (shiftErr) console.log("error shifting: ", shiftErr);
-                            }
-                        );
-                    }
-                });
-            }
-
-            result(null, { id: id, status: status });
+Queue.findById = (id, result) => {
+    sql.query("SELECT * FROM queue WHERE id = ?", [id], (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+            return;
         }
-    );
+        if (res.length) {
+            result(null, res[0]);
+        } else {
+            result({ kind: "not_found" }, null);
+        }
+    });
+};
+
+Queue.updateStatus = (id, status, tableInfo, result) => {
+    // tableInfo can be { tableId, tableName } or null
+    let updateQuery = "UPDATE queue SET status = ?";
+    let params = [status];
+
+    if (status === 'Seated' && tableInfo && tableInfo.tableId) {
+        updateQuery += ", assigned_table_id = ?, assigned_table_name = ?";
+        params.push(tableInfo.tableId, tableInfo.tableName || 'Table');
+    }
+
+    updateQuery += " WHERE id = ?";
+    params.push(id);
+
+    sql.query(updateQuery, params, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+
+        if (res.affectedRows == 0) {
+            result({ kind: "not_found" }, null);
+            return;
+        }
+
+        if (status === 'Seated' || status === 'Cancelled') {
+            sql.query("SELECT restaurant_id, position FROM queue WHERE id = ?", [id], (subErr, subRes) => {
+                if (!subErr && subRes.length > 0) {
+                    const { restaurant_id, position } = subRes[0];
+                    sql.query(
+                        "UPDATE queue SET position = position - 1, estimated_wait_time = (position - 1) * 5 WHERE restaurant_id = ? AND status = 'Waiting' AND position > ?",
+                        [restaurant_id, position],
+                        (shiftErr, shiftRes) => {
+                            if (shiftErr) console.log("error shifting: ", shiftErr);
+                        }
+                    );
+                }
+            });
+        }
+
+        result(null, {
+            id: id,
+            status: status,
+            assigned_table_id: tableInfo?.tableId || null,
+            assigned_table_name: tableInfo?.tableName || null
+        });
+    });
 };
 
 Queue.initTable = (result) => {
@@ -118,10 +143,21 @@ Queue.initTable = (result) => {
             if (result) result(err, null);
             return;
         }
-        // Add user_id column if it doesn't exist
         sql.query("ALTER TABLE queue ADD COLUMN user_id INT", (colErr) => {
             if (colErr && colErr.errno !== 1060 && colErr.code !== 'ER_DUP_FIELDNAME') {
                 console.log(`Note: user_id column in queue skipped: ${colErr.message}`);
+            }
+        });
+
+        sql.query("ALTER TABLE queue ADD COLUMN assigned_table_id INT", (colErr) => {
+            if (colErr && colErr.errno !== 1060 && colErr.code !== 'ER_DUP_FIELDNAME') {
+                console.log(`Note: assigned_table_id column in queue skipped: ${colErr.message}`);
+            }
+        });
+
+        sql.query("ALTER TABLE queue ADD COLUMN assigned_table_name VARCHAR(100)", (colErr) => {
+            if (colErr && colErr.errno !== 1060 && colErr.code !== 'ER_DUP_FIELDNAME') {
+                console.log(`Note: assigned_table_name column in queue skipped: ${colErr.message}`);
             }
         });
 

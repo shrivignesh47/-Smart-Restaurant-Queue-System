@@ -24,7 +24,6 @@ export class TableListComponent implements OnInit {
   showAvailabilityCheck = true;
   partySize: number = 2;
 
-  // Track user's bookings and queue entries
   myBookedTables: Set<number> = new Set();
   myQueueEntries: Map<number, string> = new Map(); // tableId -> queueId
   generalQueueEntryId: string | null = null;
@@ -41,14 +40,11 @@ export class TableListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Try to get from input, if not, get from route
     if (!this.restaurantId) {
       this.restaurantId = this.getRestaurantNameFromRoute();
     }
 
-    // Load restaurant-specific tables
     if (this.restaurantId) {
-      // Find restaurant object to get numeric ID
       this.restaurantService.getBySlug(this.restaurantId).subscribe(res => {
         if (res && res.id) {
           this.tableQueueService.loadTables(res.id).subscribe();
@@ -56,7 +52,6 @@ export class TableListComponent implements OnInit {
       });
     }
 
-    // Subscribe to tables
     this.tableQueueService.tables$.subscribe(tables => {
       this.tables = tables;
     });
@@ -64,7 +59,6 @@ export class TableListComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (this.currentUser && !this.restaurantId) {
-        // Mock data for "My Tables"
         this.myBookings = [
           {
             restaurantName: 'The Gourmet Kitchen',
@@ -86,7 +80,6 @@ export class TableListComponent implements OnInit {
       }
     });
 
-    // Check if we should show availability check on arrival
     const queryParams = this.route.snapshot.queryParams;
     if (queryParams['checkAvailability'] === 'true') {
       setTimeout(() => this.checkAvailabilityOnArrival(), 500);
@@ -103,14 +96,12 @@ export class TableListComponent implements OnInit {
         { duration: 5000, panelClass: ['success-snackbar'] }
       );
     } else {
-      // No tables available - automatically navigate to queue
       const snackBarRef = this.snackBar.open(
         `No tables currently available for ${this.partySize} ${this.partySize === 1 ? 'guest' : 'guests'}. Redirecting to queue...`,
         'Go Now',
         { duration: 5000, panelClass: ['warning-snackbar'] }
       );
 
-      // Auto-navigate after 2 seconds or when user clicks
       const autoNavigate = setTimeout(() => {
         this.navigateToQueue();
       }, 2000);
@@ -148,7 +139,6 @@ export class TableListComponent implements OnInit {
 
 
   promptJoinQueue(table: Table) {
-    // Open dialog for table-specific queue
     const dialogRef = this.dialog.open(JoinQueueDialogComponent, {
       width: '500px',
       data: {
@@ -181,7 +171,6 @@ export class TableListComponent implements OnInit {
   }
 
   joinGeneralQueue() {
-    // Open dialog for general queue
     const dialogRef = this.dialog.open(JoinQueueDialogComponent, {
       width: '500px',
       data: {
@@ -254,14 +243,12 @@ export class TableListComponent implements OnInit {
     }
   }
 
-  // Check if current user booked this table
   isMyBooking(table: Table): boolean {
     if (!this.currentUser || !table.bookedBy) return false;
     return this.myBookedTables.has(table.id) ||
       table.bookedBy.toLowerCase().includes(this.currentUser.name?.toLowerCase() || '');
   }
 
-  // Get user's queue position for a table
   getMyQueuePosition(table: Table): number | null {
     const queueId = this.myQueueEntries.get(table.id);
     if (!queueId) return null;
@@ -271,7 +258,6 @@ export class TableListComponent implements OnInit {
     return entry ? entry.position : null;
   }
 
-  // Get user's estimated wait time for a table
   getMyQueueWaitTime(table: Table): number {
     const queueId = this.myQueueEntries.get(table.id);
     if (!queueId) return 0;
@@ -281,7 +267,6 @@ export class TableListComponent implements OnInit {
     return entry ? entry.estimated_wait_time : 0;
   }
 
-  // View queue status for a specific table
   viewMyQueueStatus(table: Table) {
     const queueId = this.myQueueEntries.get(table.id);
     if (queueId) {
