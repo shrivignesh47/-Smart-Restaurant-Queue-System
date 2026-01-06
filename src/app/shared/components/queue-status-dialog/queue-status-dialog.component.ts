@@ -4,8 +4,8 @@ import { TableQueueService, QueueEntry } from '../../../core/services/table-queu
 import { Subscription, interval } from 'rxjs';
 
 @Component({
-    selector: 'app-queue-status-dialog',
-    template: `
+  selector: 'app-queue-status-dialog',
+  template: `
     <div class="queue-status-dialog">
       <h2 mat-dialog-title class="dialog-header">
         <mat-icon class="pulse-icon">schedule</mat-icon>
@@ -13,85 +13,118 @@ import { Subscription, interval } from 'rxjs';
       </h2>
       
       <mat-dialog-content>
-        <!-- My Position Card -->
-        <div class="my-position-card" [class.ready]="myEntry?.position === 1">
-          <div class="position-badge">
-            <div class="position-number">{{ myEntry?.position || '?' }}</div>
-            <div class="position-label">Your Position</div>
-          </div>
-          
-          <div class="customer-info">
-            <h3>{{ myEntry?.customerName }}</h3>
-            <p class="party-size">
-              <mat-icon inline>people</mat-icon>
-              Party of {{ myEntry?.partySize }}
-            </p>
-            <p class="queue-id">Queue ID: <span class="mono">{{ myEntry?.id }}</span></p>
-          </div>
-        </div>
-
-        <!-- Alert when ready -->
-        <div *ngIf="myEntry?.position === 1" class="ready-alert">
-          <mat-icon class="alert-icon">notifications_active</mat-icon>
-          <div>
-            <h4>🎉 Your Table is Ready!</h4>
-            <p>Please proceed to the restaurant now. Your table is waiting for you!</p>
-          </div>
-        </div>
-
-        <!-- Wait Time Info -->
-        <div class="wait-info-card" *ngIf="myEntry && myEntry.position > 1">
-          <div class="info-row">
-            <mat-icon>schedule</mat-icon>
-            <div>
-              <span class="label">Estimated Wait</span>
-              <span class="value">~{{ myEntry.estimatedWaitTime }} minutes</span>
+        <!-- Seated State - Customer has been assigned a table -->
+        <ng-container *ngIf="isSeated">
+          <div class="my-position-card seated">
+            <div class="position-badge">
+              <mat-icon class="seated-icon">event_seat</mat-icon>
+              <div class="position-label">Seated</div>
+            </div>
+            
+            <div class="customer-info">
+              <h3>{{ seatedEntry?.customer_name }}</h3>
+              <p class="party-size">
+                <mat-icon inline>people</mat-icon>
+                Party of {{ seatedEntry?.party_size }}
+              </p>
+              <p class="queue-id">Queue ID: <span class="mono">{{ seatedEntry?.id }}</span></p>
             </div>
           </div>
-          <div class="info-row">
-            <mat-icon>people_outline</mat-icon>
-            <div>
-              <span class="label">People Ahead</span>
-              <span class="value">{{ myEntry.position - 1 }} {{ myEntry.position - 1 === 1 ? 'person' : 'people' }}</span>
-            </div>
-          </div>
-          <div class="info-row">
-            <mat-icon>groups</mat-icon>
-            <div>
-              <span class="label">Total in Queue</span>
-              <span class="value">{{ totalQueueSize }}</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Queue List -->
-        <div class="queue-list-section">
-          <h4>Current Queue</h4>
-          <div class="queue-list">
-            <div *ngFor="let entry of queueList; let i = index" 
-                 class="queue-item"
-                 [class.is-me]="entry.id === myEntry?.id"
-                 [class.is-next]="i === 0">
-              <div class="item-position">
-                <span class="position-num">{{ entry.position }}</span>
-                <mat-icon *ngIf="i === 0" class="crown-icon">stars</mat-icon>
+          <div class="seated-alert">
+            <div class="table-assignment">
+              <mat-icon class="table-icon">table_restaurant</mat-icon>
+              <div class="table-info">
+                <h4>🎉 You've Been Seated!</h4>
+                <p class="table-name">Your Table: <strong>{{ seatedEntry?.assigned_table_name || 'Table Assigned' }}</strong></p>
+                <p class="instruction">Please proceed to your assigned table. Enjoy your meal!</p>
               </div>
-              <div class="item-info">
-                <div class="item-name">
-                  {{ entry.id === myEntry?.id ? 'You' : entry.customerName }}
-                  <mat-chip *ngIf="entry.id === myEntry?.id" class="me-chip">ME</mat-chip>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Regular Queue State -->
+        <ng-container *ngIf="!isSeated">
+          <!-- My Position Card -->
+          <div class="my-position-card" [class.ready]="myEntry?.position === 1">
+            <div class="position-badge">
+              <div class="position-number">{{ myEntry?.position || '?' }}</div>
+              <div class="position-label">Your Position</div>
+            </div>
+            
+            <div class="customer-info">
+              <h3>{{ myEntry?.customer_name }}</h3>
+              <p class="party-size">
+                <mat-icon inline>people</mat-icon>
+                Party of {{ myEntry?.party_size }}
+              </p>
+              <p class="queue-id">Queue ID: <span class="mono">{{ myEntry?.id }}</span></p>
+            </div>
+          </div>
+
+          <!-- Alert when ready -->
+          <div *ngIf="myEntry?.position === 1" class="ready-alert">
+            <mat-icon class="alert-icon">notifications_active</mat-icon>
+            <div>
+              <h4>🎉 Your Table is Ready!</h4>
+              <p>Please wait for staff to assign you a table. You will be notified shortly!</p>
+            </div>
+          </div>
+
+          <!-- Wait Time Info -->
+          <div class="wait-info-card" *ngIf="myEntry && myEntry.position > 1">
+            <div class="info-row">
+              <mat-icon>schedule</mat-icon>
+              <div>
+                <span class="label">Estimated Wait</span>
+                <span class="value">~{{ myEntry.estimated_wait_time }} minutes</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <mat-icon>people_outline</mat-icon>
+              <div>
+                <span class="label">People Ahead</span>
+                <span class="value">{{ myEntry.position - 1 }} {{ myEntry.position - 1 === 1 ? 'person' : 'people' }}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <mat-icon>groups</mat-icon>
+              <div>
+                <span class="label">Total in Queue</span>
+                <span class="value">{{ totalQueueSize }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Queue List -->
+          <div class="queue-list-section">
+            <h4>Current Queue</h4>
+            <div class="queue-list">
+              <div *ngFor="let entry of queueList; let i = index" 
+                   class="queue-item"
+                   [class.is-me]="entry.id === myEntry?.id"
+                   [class.is-next]="i === 0">
+                <div class="item-position">
+                  <span class="position-num">{{ entry.position }}</span>
+                  <mat-icon *ngIf="i === 0" class="crown-icon">stars</mat-icon>
                 </div>
-                <div class="item-details">
-                  Party of {{ entry.partySize }} • ~{{ entry.estimatedWaitTime }} min wait
+                <div class="item-info">
+                  <div class="item-name">
+                    {{ entry.id === myEntry?.id ? 'You' : entry.customer_name }}
+                    <mat-chip *ngIf="entry.id === myEntry?.id" class="me-chip">ME</mat-chip>
+                  </div>
+                  <div class="item-details">
+                    Party of {{ entry.party_size }} • ~{{ entry.estimated_wait_time }} min wait
+                  </div>
                 </div>
-              </div>
-              <div class="item-status">
-                <mat-icon *ngIf="entry.status === 'Waiting'" class="status-icon waiting">schedule</mat-icon>
-                <mat-icon *ngIf="entry.status === 'Called'" class="status-icon called">notifications_active</mat-icon>
+                <div class="item-status">
+                  <mat-icon *ngIf="entry.status === 'Waiting'" class="status-icon waiting">schedule</mat-icon>
+                  <mat-icon *ngIf="entry.status === 'Called'" class="status-icon called">notifications_active</mat-icon>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </ng-container>
 
         <!-- Live Update Indicator -->
         <div class="live-indicator">
@@ -101,7 +134,7 @@ import { Subscription, interval } from 'rxjs';
       </mat-dialog-content>
 
       <mat-dialog-actions align="end">
-        <button mat-button (click)="leaveQueue()" color="warn">
+        <button mat-button (click)="leaveQueue()" color="warn" *ngIf="!isSeated">
           <mat-icon>exit_to_app</mat-icon> Leave Queue
         </button>
         <button mat-raised-button mat-dialog-close color="primary">
@@ -110,7 +143,7 @@ import { Subscription, interval } from 'rxjs';
       </mat-dialog-actions>
     </div>
   `,
-    styles: [`
+  styles: [`
     .queue-status-dialog {
       min-width: 500px;
       max-width: 600px;
@@ -227,6 +260,62 @@ import { Subscription, interval } from 'rxjs';
     .ready-alert p {
       margin: 0;
       opacity: 0.95;
+    }
+
+    .my-position-card.seated {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .seated-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+
+    .seated-alert {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    }
+
+    .table-assignment {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .table-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      opacity: 0.9;
+    }
+
+    .table-info h4 {
+      margin: 0 0 12px;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .table-name {
+      font-size: 1.2rem;
+      margin: 0 0 8px;
+    }
+
+    .table-name strong {
+      background: rgba(255,255,255,0.2);
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 1.4rem;
+    }
+
+    .instruction {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
     }
 
     .wait-info-card {
@@ -412,79 +501,118 @@ import { Subscription, interval } from 'rxjs';
   `]
 })
 export class QueueStatusDialogComponent implements OnInit, OnDestroy {
-    myEntry: QueueEntry | null = null;
-    queueList: QueueEntry[] = [];
-    totalQueueSize: number = 0;
-    lastUpdateTime: string = 'just now';
+  myEntry: QueueEntry | null = null;
+  seatedEntry: QueueEntry | null = null;
+  isSeated: boolean = false;
+  queueList: QueueEntry[] = [];
+  totalQueueSize: number = 0;
+  lastUpdateTime: string = 'just now';
 
-    private queueSubscription?: Subscription;
-    private updateInterval?: Subscription;
-    private alertShown: boolean = false;
+  private queueSubscription?: Subscription;
+  private updateInterval?: Subscription;
+  private seatedCheckInterval?: Subscription;
+  private alertShown: boolean = false;
+  private seatedAlertShown: boolean = false;
 
-    constructor(
-        public dialogRef: MatDialogRef<QueueStatusDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { queueId: string },
-        private tableQueueService: TableQueueService
-    ) { }
+  constructor(
+    public dialogRef: MatDialogRef<QueueStatusDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { queueId: string },
+    private tableQueueService: TableQueueService
+  ) { }
 
-    ngOnInit() {
-        // Subscribe to queue updates
-        this.queueSubscription = this.tableQueueService.queue$.subscribe(queue => {
-            this.queueList = queue.sort((a, b) => a.position - b.position);
-            this.totalQueueSize = queue.length;
-            this.myEntry = queue.find(q => q.id === this.data.queueId) || null;
+  ngOnInit() {
+    this.queueSubscription = this.tableQueueService.queue$.subscribe(queue => {
+      this.queueList = queue.sort((a, b) => a.position - b.position);
+      this.totalQueueSize = queue.length;
+      this.myEntry = queue.find(q => q.id.toString() === this.data.queueId) || null;
 
-            // Check if it's my turn
-            if (this.myEntry && this.myEntry.position === 1 && !this.alertShown) {
-                this.showReadyAlert();
-                this.alertShown = true;
+      if (this.myEntry && this.myEntry.position === 1 && !this.alertShown) {
+        this.showReadyAlert();
+        this.alertShown = true;
+      }
+
+      if (!this.myEntry && !this.isSeated) {
+        this.checkIfSeated();
+      }
+
+      this.updateLastUpdateTime();
+    });
+
+    this.updateInterval = interval(10000).subscribe(() => {
+      this.updateLastUpdateTime();
+    });
+
+    this.seatedCheckInterval = interval(3000).subscribe(() => {
+      if (!this.isSeated) {
+        this.checkIfSeated();
+      }
+    });
+
+    this.checkIfSeated();
+  }
+
+  checkIfSeated() {
+    if (this.data.queueId) {
+      this.tableQueueService.getQueueEntry(parseInt(this.data.queueId)).subscribe({
+        next: (entry) => {
+          if (entry.status === 'Seated') {
+            this.isSeated = true;
+            this.seatedEntry = entry;
+
+            if (!this.seatedAlertShown && entry.assigned_table_name) {
+              this.showSeatedAlert(entry.assigned_table_name);
+              this.seatedAlertShown = true;
             }
-
-            this.updateLastUpdateTime();
-        });
-
-        // Update time every 10 seconds
-        this.updateInterval = interval(10000).subscribe(() => {
-            this.updateLastUpdateTime();
-        });
+          }
+        },
+        error: () => { }
+      });
     }
+  }
 
-    ngOnDestroy() {
-        if (this.queueSubscription) {
-            this.queueSubscription.unsubscribe();
-        }
-        if (this.updateInterval) {
-            this.updateInterval.unsubscribe();
-        }
+  showSeatedAlert(tableName: string) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('You\'ve Been Seated! 🎉', {
+        body: `Your table is ready: ${tableName}. Please proceed to your assigned table.`,
+        icon: '/assets/icons/icon-192x192.png'
+      });
     }
+  }
 
-    updateLastUpdateTime() {
-        const now = new Date();
-        this.lastUpdateTime = now.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
+  ngOnDestroy() {
+    if (this.queueSubscription) {
+      this.queueSubscription.unsubscribe();
     }
-
-    showReadyAlert() {
-        // Play notification sound (if available)
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Your Table is Ready! 🎉', {
-                body: 'Please proceed to the restaurant now.',
-                icon: '/assets/icons/icon-192x192.png'
-            });
-        }
-
-        // You could also play a sound here
-        // const audio = new Audio('assets/sounds/notification.mp3');
-        // audio.play();
+    if (this.updateInterval) {
+      this.updateInterval.unsubscribe();
     }
-
-    leaveQueue() {
-        if (this.myEntry && confirm('Are you sure you want to leave the queue?')) {
-            this.tableQueueService.leaveQueue(this.myEntry.id);
-            this.dialogRef.close({ left: true });
-        }
+    if (this.seatedCheckInterval) {
+      this.seatedCheckInterval.unsubscribe();
     }
+  }
+
+  updateLastUpdateTime() {
+    const now = new Date();
+    this.lastUpdateTime = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+
+  showReadyAlert() {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Your Table is Ready! 🎉', {
+        body: 'Please proceed to the restaurant now.',
+        icon: '/assets/icons/icon-192x192.png'
+      });
+    }
+  }
+
+  leaveQueue() {
+    if (this.myEntry && confirm('Are you sure you want to leave the queue?')) {
+      this.tableQueueService.leaveQueue(this.myEntry.id);
+      this.dialogRef.close({ left: true });
+    }
+  }
 }

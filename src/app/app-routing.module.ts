@@ -46,6 +46,11 @@ const routes: Routes = [
     loadChildren: () => import('./features/partner/partner.module').then(m => m.PartnerModule)
   },
   {
+    path: ':restaurantName/scanner',
+    loadChildren: () => import('./features/scanner/scanner.module').then(m => m.ScannerModule),
+    canActivate: [RestaurantGuard]
+  },
+  {
     path: ':restaurantName',
     loadChildren: () => import('./features/restaurant/restaurant.module').then(m => m.RestaurantModule),
     canActivate: [RestaurantGuard]

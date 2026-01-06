@@ -2,20 +2,27 @@ import { Injectable } from '@angular/core';
 import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { AuthService } from './services/auth.service';
 
 @Injectable()
 export class HttpInterceptorService implements HttpInterceptor {
 
+  constructor(private authService: AuthService) { }
+
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // TODO: Add token to request headers if needed
-    // const authToken = 'your-auth-token';
-    // const authReq = req.clone({
-    //   setHeaders: { Authorization: `Bearer ${authToken}` }
-    // });
+    const token = this.authService.token;
+
+    if (token) {
+      req = req.clone({
+        setHeaders: { Authorization: `Bearer ${token}` }
+      });
+    }
 
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        // TODO: Implement proper error handling and logging service
+        if (error.status === 401) {
+          this.authService.logout();
+        }
         return throwError(() => error);
       })
     );

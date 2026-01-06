@@ -64,8 +64,8 @@
         </div>
         <div class="ticket-body">
             <div class="customer-info" style="margin-bottom: 16px;">
-                <p><strong>Name:</strong> {{ userQueueEntry.customerName }}</p>
-                <p><strong>Party Size:</strong> {{ userQueueEntry.partySize }} {{ userQueueEntry.partySize === 1 ?
+                <p><strong>Name:</strong> {{ userQueueEntry.customer_name }}</p>
+                <p><strong>Party Size:</strong> {{ userQueueEntry.party_size }} {{ userQueueEntry.party_size === 1 ?
                     'person' : 'people' }}</p>
                 <p><strong>Queue ID:</strong> {{ userQueueEntry.id }}</p>
             </div>
@@ -78,7 +78,7 @@
             <div class="wait-info" style="margin: 16px 0;">
                 <p style="font-size: 1.1rem; color: var(--primary-color);">
                     <mat-icon inline style="vertical-align: middle;">schedule</mat-icon>
-                    Estimated wait: <strong>{{ userQueueEntry.estimatedWaitTime }} minutes</strong>
+                    Estimated wait: <strong>{{ userQueueEntry.estimated_wait_time }} minutes</strong>
                 </p>
             </div>
 
@@ -99,8 +99,8 @@
             <mat-list-item *ngFor="let entry of queue; let i = index"
                 [class.highlighted]="entry.id === userQueueEntry?.id">
                 <mat-icon matListItemIcon>person</mat-icon>
-                <div matListItemTitle>Position #{{ entry.position }} - {{ entry.customerName }}</div>
-                <div matListItemLine>Party of {{ entry.partySize }} • Wait: ~{{ entry.estimatedWaitTime }} min</div>
+                <div matListItemTitle>Position #{{ entry.position }} - {{ entry.customer_name }}</div>
+                <div matListItemLine>Party of {{ entry.party_size }} • Wait: ~{{ entry.estimated_wait_time }} min</div>
             </mat-list-item>
         </mat-list>
     </div>

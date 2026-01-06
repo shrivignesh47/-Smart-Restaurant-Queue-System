@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AuthService } from '../../../core/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -15,10 +15,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   resendTimer: number = 0;
   private timerInterval?: any;
+  private otpToken: string = '';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private authService: AuthService
   ) {
@@ -30,8 +32,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Check if user is already logged in
-    if (this.authService.isLoggedIn()) {
+    if (this.authService.isAuthenticated()) {
       this.router.navigate(['/']);
     }
   }
@@ -66,26 +67,38 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const phone = this.loginForm.get('phone')?.value;
 
-    // Simulate OTP sending (replace with actual API call)
-    setTimeout(() => {
-      this.isLoading = false;
-      this.otpSent = true;
+    this.authService.sendOtp(phone).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.otpSent = true;
+        this.otpToken = res.otpToken;
 
-      // Add OTP validator
-      this.loginForm.get('otp')?.setValidators([
-        Validators.required,
-        Validators.pattern(/^\d{6}$/)
-      ]);
-      this.loginForm.get('otp')?.updateValueAndValidity();
+        // Add OTP validator
+        this.loginForm.get('otp')?.setValidators([
+          Validators.required,
+          Validators.pattern(/^\d{6}$/)
+        ]);
+        this.loginForm.get('otp')?.updateValueAndValidity();
 
-      this.snackBar.open(
-        `OTP sent to +91 ${phone}. Use 123456 for demo.`,
-        'Close',
-        { duration: 5000, panelClass: ['success-snackbar'] }
-      );
+        // For demo purposes, we can show the mock OTP if returned by backend (usually disabled in prod)
+        const message = res.otp ? `OTP sent: ${res.otp}` : `OTP sent to +91 ${phone}`;
 
-      this.startResendTimer();
-    }, 1500);
+        this.snackBar.open(message, 'Close', {
+          duration: 5000,
+          panelClass: ['success-snackbar']
+        });
+
+        this.startResendTimer();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        const errMsg = err.error?.message || 'Failed to send OTP. Please try again.';
+        this.snackBar.open(errMsg, 'Close', {
+          duration: 4000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   verifyOTP(): void {
@@ -93,52 +106,31 @@ export class LoginComponent implements OnInit, OnDestroy {
     const phone = this.loginForm.get('phone')?.value;
     const otp = this.loginForm.get('otp')?.value;
 
-    // Simulate OTP verification (replace with actual API call)
-    setTimeout(() => {
-      this.isLoading = false;
+    this.authService.verifyOtp(phone, otp, this.otpToken).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.snackBar.open('Login successful! Welcome back.', 'Close', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
 
-      // Demo: Accept 123456 as valid OTP
-      if (otp === '123456') {
-        // Create user session
-        const user = {
-          name: 'User',
-          phone: phone,
-          id: Date.now().toString()
-        };
-
-        // Store in localStorage (in real app, use proper auth service)
-        localStorage.setItem('currentUser', JSON.stringify(user));
-
-        this.snackBar.open(
-          'Login successful! Welcome back.',
-          'Close',
-          { duration: 3000, panelClass: ['success-snackbar'] }
-        );
-
-        // Navigate to home
-        setTimeout(() => {
-          this.router.navigate(['/']);
-        }, 500);
-      } else {
-        this.snackBar.open(
-          'Invalid OTP. Please try again. (Use 123456 for demo)',
-          'Close',
-          { duration: 4000, panelClass: ['error-snackbar'] }
-        );
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+        this.router.navigateByUrl(returnUrl);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        const errMsg = err.error?.message || 'Invalid OTP. Please try again.';
+        this.snackBar.open(errMsg, 'Close', {
+          duration: 4000,
+          panelClass: ['error-snackbar']
+        });
       }
-    }, 1500);
+    });
   }
 
   resendOTP(): void {
     if (this.resendTimer > 0) return;
-
-    this.snackBar.open(
-      'OTP resent successfully!',
-      'Close',
-      { duration: 3000, panelClass: ['success-snackbar'] }
-    );
-
-    this.startResendTimer();
+    this.sendOTP();
   }
 
   startResendTimer(): void {

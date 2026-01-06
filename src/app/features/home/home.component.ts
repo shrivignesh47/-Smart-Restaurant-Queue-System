@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RestaurantDataService, Restaurant } from '../../shared/services/restaurant-data.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
 
 @Component({
   selector: 'app-home',
@@ -30,8 +30,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
-  restaurants: Restaurant[] = [];
-
+  restaurants: any[] = [];
 
   features = [
     { icon: 'table_bar', title: 'Real-Time Tables', desc: 'View live table availability and status updates instantly' },
@@ -52,11 +51,35 @@ export class HomeComponent implements OnInit, OnDestroy {
     { title: 'Real-Time Queue Position', desc: 'View real-time queue position and estimated waiting time.', icon: 'schedule' }
   ];
 
-  constructor(private restaurantDataService: RestaurantDataService) { }
+  constructor(private restaurantService: RestaurantService) { }
 
   ngOnInit() {
-    // Load featured restaurants (first 4)
-    this.restaurants = this.restaurantDataService.getFeaturedRestaurants(4);
+    this.loadRestaurants();
+  }
+
+  loadRestaurants() {
+    this.restaurantService.getAll({ status: 'active' }).subscribe({
+      next: (data) => {
+        // Map backend data to UI format
+        this.restaurants = data.slice(0, 4).map(r => ({
+          id: r.id,
+          name: r.name,
+          slug: r.slug,
+          image: r.cover_image_url || 'assets/images/hero1.png',
+          logo: r.logo_url,
+          rating: 4.5, // Default mock rating as backend doesn't have it yet
+          cuisine: r.cuisine_type ? [r.cuisine_type] : ['South Indian'],
+          location: r.city || 'Coimbatore',
+          status: r.status === 'active' ? 'Open' : 'Closed',
+          waitTime: '15-20 min',
+          openingHours: r.opening_time ? `${r.opening_time.substring(0, 5)} - ${r.closing_time?.substring(0, 5)}` : '10:00 - 23:00',
+          description: r.description || 'Authentic Tamil cuisine.'
+        }));
+      },
+      error: (err) => {
+        console.error('Error loading restaurants', err);
+      }
+    });
   }
 
   ngOnDestroy() {

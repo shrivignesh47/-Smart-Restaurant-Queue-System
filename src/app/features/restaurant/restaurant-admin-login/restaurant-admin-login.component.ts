@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from '../../../core/services/auth.service';
+import { RestaurantService, Restaurant } from '../../../core/services/restaurant.service';
 
 @Component({
   selector: 'app-restaurant-admin-login',
@@ -13,12 +15,15 @@ export class RestaurantAdminLoginComponent implements OnInit {
   hidePassword = true;
   isLoading = false;
   restaurantName = '';
+  targetRestaurant: Restaurant | null = null;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService,
+    private restaurantService: RestaurantService
   ) {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
@@ -28,6 +33,20 @@ export class RestaurantAdminLoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.restaurantName = this.route.snapshot.paramMap.get('restaurantName') || '';
+
+    // Fetch restaurant details to get ID
+    if (this.restaurantName) {
+      this.restaurantService.getBySlug(this.restaurantName).subscribe({
+        next: (res) => {
+          this.targetRestaurant = res;
+        },
+        error: (err) => {
+          console.error('[ManagerLogin] Error fetching restaurant:', err);
+          this.snackBar.open('Invalid restaurant portal.', 'Close', { duration: 3000 });
+          this.router.navigate(['/']);
+        }
+      });
+    }
 
     // Check if already logged in
     const managerToken = localStorage.getItem(`manager_${this.restaurantName}`);
@@ -42,34 +61,56 @@ export class RestaurantAdminLoginComponent implements OnInit {
     this.isLoading = true;
     const { username, password } = this.loginForm.value;
 
-    setTimeout(() => {
-      // Demo credentials: manager/manager
-      if (username === 'manager' && password === 'manager') {
-        const managerData = {
-          username: 'manager',
-          restaurantName: this.restaurantName,
-          role: 'restaurant_manager',
-          token: 'manager_' + Date.now(),
-          loginTime: new Date().toISOString()
-        };
+    this.authService.login(username, password).subscribe({
+      next: (response) => {
+        this.isLoading = false;
 
-        localStorage.setItem(`manager_${this.restaurantName}`, managerData.token);
-        localStorage.setItem(`managerData_${this.restaurantName}`, JSON.stringify(managerData));
-
-        this.snackBar.open('Login successful! Welcome Manager', 'Close', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-
-        this.router.navigate([this.restaurantName, 'admin', 'dashboard']);
-      } else {
-        this.snackBar.open('Invalid credentials. Use manager/manager', 'Close', {
+        if (response.role === 'RestaurantAdmin') {
+          // Check if this manager belongs to THIS restaurant
+          if (response.restaurant_id == this.targetRestaurant?.id) {
+            this.proceedToDashboard(response);
+          } else {
+            this.authService.logout();
+            this.snackBar.open(`Access denied. You are not a manager for ${this.targetRestaurant?.name || this.restaurantName}`, 'Close', {
+              duration: 5000,
+              panelClass: ['error-snackbar']
+            });
+          }
+        } else if (response.role === 'Admin') {
+          this.authService.logout();
+          this.snackBar.open('Super Admins must login via the System Admin portal, not individual restaurant portals.', 'Close', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+        } else {
+          this.authService.logout();
+          this.snackBar.open('Invalid account role for this portal.', 'Close', {
+            duration: 4000,
+            panelClass: ['error-snackbar']
+          });
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('[ManagerLogin] Login Error:', err);
+        const errorMsg = err.error?.message || 'Login failed. Please check credentials.';
+        this.snackBar.open(errorMsg, 'Close', {
           duration: 4000,
           panelClass: ['error-snackbar']
         });
       }
+    });
+  }
 
-      this.isLoading = false;
-    }, 1500);
+  private proceedToDashboard(response: any): void {
+    localStorage.setItem(`manager_${this.restaurantName}`, response.accessToken);
+    localStorage.setItem(`managerData_${this.restaurantName}`, JSON.stringify(response));
+
+    this.snackBar.open(`Login successful! Welcome ${response.name}`, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+
+    this.router.navigate([this.restaurantName, 'admin', 'dashboard']);
   }
 }

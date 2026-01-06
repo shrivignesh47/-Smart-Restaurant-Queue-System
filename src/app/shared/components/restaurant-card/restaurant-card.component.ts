@@ -7,6 +7,6 @@ import { Restaurant } from '../../services/restaurant-data.service';
   styleUrls: ['./restaurant-card.component.scss']
 })
 export class RestaurantCardComponent {
-  @Input() restaurant!: Restaurant;
+  @Input() restaurant!: any;
   @Input() showFullDetails: boolean = false;
 }

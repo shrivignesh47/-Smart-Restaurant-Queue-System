@@ -1,12 +1,22 @@
-<mat-card class="restaurant-card" [routerLink]="['/', restaurant.name]">
-    <img mat-card-image [src]="restaurant.image" [alt]="restaurant.name" class="restaurant-image">
+<mat-card class="restaurant-card" [routerLink]="['/', restaurant.slug || restaurant.name]">
+    <div class="image-container" style="position: relative;">
+        <img mat-card-image [src]="restaurant.image" [alt]="restaurant.name" class="restaurant-image">
+
+        <!-- Logo Overlay -->
+        <div class="card-logo" *ngIf="restaurant.logo || restaurant.logo_url"
+            style="position: absolute; bottom: 10px; left: 16px; width: 50px; height: 50px; background: white; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 2;">
+            <img [src]="restaurant.logo || restaurant.logo_url"
+                style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 50%;">
+        </div>
+    </div>
+
     <mat-card-content>
         <div class="card-header">
             <div class="restaurant-info">
                 <h3 class="restaurant-name">{{ restaurant.name }}</h3>
                 <p class="restaurant-location">
                     <mat-icon>location_on</mat-icon>
-                    {{ restaurant.location }}
+                    {{ restaurant.location || restaurant.city || 'Coimbatore' }}
                 </p>
             </div>
             <span class="rating-badge">
@@ -15,45 +25,38 @@
             </span>
         </div>
 
-        <div class="cuisine-tags">
-            <span class="tag" *ngFor="let cuisine of restaurant.cuisine">{{ cuisine }}</span>
+        <div class="cuisine-tags" *ngIf="restaurant.cuisine">
+            <!-- Ensure cuisine is treated as array or string -->
+            <span class="tag">{{ restaurant.cuisine }}</span>
         </div>
 
-        <p class="restaurant-description" *ngIf="showFullDetails">
+        <!-- Truncated Description -->
+        <p class="restaurant-description"
+            style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: #666; font-size: 0.9rem; line-height: 1.5; margin-top: 12px; margin-bottom: 12px;">
             {{ restaurant.description }}
         </p>
 
-        <div class="specialties" *ngIf="showFullDetails">
-            <p class="specialties-label">Specialties:</p>
-            <div class="specialty-tags">
-                <span class="specialty-tag" *ngFor="let specialty of restaurant.specialties">
-                    {{ specialty }}
-                </span>
-            </div>
-        </div>
+        <!-- Removed Specialties and Price as requested -->
 
         <div class="status-info">
-            <div class="queue-status" [ngClass]="restaurant.status.toLowerCase()">
-                <span class="dot"></span> {{ restaurant.status }} Queue
+            <div class="queue-status" [ngClass]="(restaurant.status || 'Closed').toLowerCase()">
+                <span class="dot"></span> {{ restaurant.status || 'Closed' }}
             </div>
-            <div class="wait-time">
+            <div class="wait-time" *ngIf="restaurant.waitTime">
                 <mat-icon inline>schedule</mat-icon> ~{{ restaurant.waitTime }}
             </div>
         </div>
 
-        <div class="additional-info" *ngIf="showFullDetails">
+        <div class="additional-info" *ngIf="restaurant.openingHours">
             <div class="info-item">
                 <mat-icon>schedule</mat-icon>
                 <span>{{ restaurant.openingHours }}</span>
             </div>
-            <div class="info-item">
-                <mat-icon>payments</mat-icon>
-                <span>{{ restaurant.priceRange }}</span>
-            </div>
         </div>
     </mat-card-content>
+
     <mat-card-actions>
-        <button mat-stroked-button color="primary" class="view-btn">
+        <button mat-stroked-button color="primary" class="view-btn" style="width: 100%;">
             View Restaurant
         </button>
     </mat-card-actions>

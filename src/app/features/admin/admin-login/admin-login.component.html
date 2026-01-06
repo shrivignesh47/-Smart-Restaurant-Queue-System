@@ -26,14 +26,7 @@
                 <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
             </mat-form-field>
 
-            <div class="demo-credentials">
-                <mat-icon>info</mat-icon>
-                <div>
-                    <strong>Demo Credentials:</strong><br>
-                    Username: <code>admin</code><br>
-                    Password: <code>admin</code>
-                </div>
-            </div>
+
 
             <button mat-raised-button color="primary" type="submit" class="login-btn"
                 [disabled]="loginForm.invalid || isLoading">

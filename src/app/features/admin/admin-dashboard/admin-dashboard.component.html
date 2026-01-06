@@ -133,34 +133,30 @@
                         </mat-card>
 
                         <mat-card class="modern-card recent-activity">
-                            <mat-card-header>
+                            <mat-card-header
+                                style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
                                 <mat-card-title>Recent Activity</mat-card-title>
+                                <span class="live-indicator-dot" *ngIf="recentActivities.length > 0">Live</span>
                             </mat-card-header>
                             <mat-card-content>
                                 <div class="activity-list">
-                                    <div class="activity-item">
-                                        <div class="activity-dot"></div>
+                                    <div class="activity-item" *ngFor="let activity of recentActivities">
+                                        <div class="activity-dot"
+                                            [ngClass]="{'blue': activity.type === 'update', 'green': activity.type === 'create'}">
+                                        </div>
                                         <div class="activity-content">
-                                            <strong>New Restaurant Joined</strong>
-                                            <span>The Grand Palace registered</span>
-                                            <small>2 hours ago</small>
+                                            <strong>{{ activity.title }}</strong>
+                                            <span>{{ activity.desc }}</span>
+                                            <small>{{ activity.time | date:'shortTime' }} ({{ activity.time | date:'MMM
+                                                d' }})</small>
                                         </div>
                                     </div>
-                                    <div class="activity-item">
-                                        <div class="activity-dot blue"></div>
-                                        <div class="activity-content">
-                                            <strong>Settings Updated</strong>
-                                            <span>System maintenance scheduled</span>
-                                            <small>5 hours ago</small>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-dot green"></div>
-                                        <div class="activity-content">
-                                            <strong>New Account</strong>
-                                            <span>User John Doe created an account</span>
-                                            <small>Yesterday</small>
-                                        </div>
+
+                                    <div *ngIf="recentActivities.length === 0"
+                                        style="padding: 24px; text-align: center; color: #888;">
+                                        <mat-icon
+                                            style="font-size: 32px; height: 32px; width: 32px; margin-bottom: 8px;">history</mat-icon>
+                                        <p>No recent activity detected.</p>
                                     </div>
                                 </div>
                             </mat-card-content>
@@ -189,11 +185,12 @@
                             </ng-container>
 
                             <ng-container matColumnDef="type">
-                                <th mat-header-cell *matHeaderCellDef>Type</th>
+                                <th mat-header-cell *matHeaderCellDef>Location</th>
                                 <td mat-cell *matCellDef="let restaurant">
-                                    <span class="type-badge" [ngClass]="restaurant.type">
-                                        {{ restaurant.type | titlecase }}
-                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <mat-icon class="text-sm">location_on</mat-icon>
+                                        {{ restaurant.city || 'N/A' }}
+                                    </div>
                                 </td>
                             </ng-container>
 
@@ -255,15 +252,15 @@
                                 <th mat-header-cell *matHeaderCellDef>Full Name</th>
                                 <td mat-cell *matCellDef="let user" class="bold-cell">
                                     <div class="flex items-center gap-3">
-                                        <div class="user-avatar-sm">{{ user.fullName.charAt(0) }}</div>
-                                        {{ user.fullName }}
+                                        <div class="user-avatar-sm">{{ user.name?.charAt(0) || 'U' }}</div>
+                                        {{ user.name }}
                                     </div>
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="username">
                                 <th mat-header-cell *matHeaderCellDef>Username</th>
-                                <td mat-cell *matCellDef="let user">@{{ user.username }}</td>
+                                <td mat-cell *matCellDef="let user">@{{ user.contact_info }}</td>
                             </ng-container>
 
                             <ng-container matColumnDef="role">
@@ -286,7 +283,7 @@
                                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                                 <td mat-cell *matCellDef="let user">
                                     <button mat-icon-button color="warn" matTooltip="Remove Access"
-                                        [disabled]="user.username === 'admin'">
+                                        [disabled]="user.contact_info === 'admin'">
                                         <mat-icon>block</mat-icon>
                                     </button>
                                 </td>
@@ -299,65 +296,227 @@
 
                     <!-- Sub-section for Sub-Users (Restaurant Managers) -->
                     <div class="mt-8">
-                        <h3 class="text-xl font-bold mb-4 text-[#1b2559]">Restaurant Managers</h3>
+                        <div class="section-header flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-[#1b2559]">Restaurant Managers</h3>
+                            <button mat-stroked-button color="primary" size="small" (click)="createSubUser(null)">
+                                <mat-icon>add</mat-icon> Add Manager
+                            </button>
+                        </div>
                         <mat-card class="modern-card">
                             <mat-list>
-                                <div *ngIf="subUsers.length === 0" class="p-4 text-center text-gray-400">
+                                <div *ngIf="restaurantManagers.length === 0" class="p-4 text-center text-gray-400">
                                     <p>No sub-users created yet. Add a restaurant with manager credentials to see them
                                         here.</p>
                                 </div>
-                                <mat-list-item *ngFor="let user of subUsers">
+                                <mat-list-item *ngFor="let user of restaurantManagers">
                                     <mat-icon matListItemIcon>store</mat-icon>
-                                    <h3 matListItemTitle>{{ user.username }}</h3>
-                                    <p matListItemLine>Manager for {{ user.restaurant }}</p>
-                                    <button mat-icon-button matListItemMeta>
-                                        <mat-icon>edit</mat-icon>
-                                    </button>
+                                    <h3 matListItemTitle>{{ user.contact_info }}</h3>
+                                    <p matListItemLine>Manager for <strong>{{ user.restaurantName }}</strong></p>
+                                    <div matListItemMeta class="flex gap-2">
+                                        <span class="text-xs text-gray-400 mr-4">{{ user.created_at | date:'shortDate'
+                                            }}</span>
+                                        <button mat-icon-button color="primary">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                    </div>
                                 </mat-list-item>
                             </mat-list>
+                        </mat-card>
+                    </div>
+
+                    <!-- Section for Customers -->
+                    <div class="mt-8 mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-[#1b2559]">Registered Customers</h3>
+                        <mat-card class="modern-card table-card">
+                            <table mat-table [dataSource]="customers" class="modern-table">
+                                <ng-container matColumnDef="name">
+                                    <th mat-header-cell *matHeaderCellDef>Customer Name</th>
+                                    <td mat-cell *matCellDef="let user" class="bold-cell">{{ user.name }}</td>
+                                </ng-container>
+                                <ng-container matColumnDef="username">
+                                    <th mat-header-cell *matHeaderCellDef>Contact</th>
+                                    <td mat-cell *matCellDef="let user">{{ user.contact_info }}</td>
+                                </ng-container>
+                                <ng-container matColumnDef="role">
+                                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                                    <td mat-cell *matCellDef="let user"><span class="role-badge green">Verified</span>
+                                    </td>
+                                </ng-container>
+                                <ng-container matColumnDef="status">
+                                    <th mat-header-cell *matHeaderCellDef>Joined</th>
+                                    <td mat-cell *matCellDef="let user">{{ user.created_at | date:'mediumDate' }}</td>
+                                </ng-container>
+                                <ng-container matColumnDef="actions">
+                                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                                    <td mat-cell *matCellDef="let user">
+                                        <button mat-icon-button><mat-icon>visibility</mat-icon></button>
+                                    </td>
+                                </ng-container>
+                                <tr mat-header-row *matHeaderRowDef="adminColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: adminColumns;"></tr>
+                            </table>
+                            <div *ngIf="customers.length === 0" class="p-8 text-center text-gray-400">
+                                <mat-icon class="text-4xl mb-2">person_off</mat-icon>
+                                <p>No registered customers yet.</p>
+                            </div>
                         </mat-card>
                     </div>
                 </div>
 
                 <!-- Analytics Tab -->
                 <div *ngIf="activeTab === 'analytics'" class="tab-fade-in">
-                    <div class="stats-grid">
-                        <mat-card class="modern-card">
-                            <mat-card-header>
-                                <mat-card-title>Monthly Revenue Trend</mat-card-title>
-                            </mat-card-header>
-                            <mat-card-content class="chart-content">
-                                <div class="bar-chart-mock">
-                                    <div *ngFor="let data of monthlyRevenue" class="bar"
-                                        [style.height.%]="(data.value / getMaxRevenue()) * 100"
-                                        [matTooltip]="data.month + ': ₹' + (data.value | number)">
-                                    </div>
+                    <!-- System Health Header -->
+                    <div class="stats-grid mb-6"
+                        style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box blue">
+                                <mat-icon>timer</mat-icon>
+                            </div>
+                            <div class="stat-details">
+                                <span class="label">Uptime</span>
+                                <h3 class="value">{{ ((systemStats?.uptime || 0) / 60) | number:'1.0-0' }} min</h3>
+                                <div class="trend up">
+                                    <span>Active</span>
                                 </div>
-                                <div class="chart-labels">
-                                    <span *ngFor="let data of monthlyRevenue">{{ data.month }}</span>
-                                </div>
-                            </mat-card-content>
-                        </mat-card>
+                            </div>
+                        </div>
 
-                        <mat-card class="modern-card">
-                            <mat-card-header>
-                                <mat-card-title>User Growth</mat-card-title>
-                            </mat-card-header>
-                            <mat-card-content class="chart-content">
-                                <div class="growth-stat">
-                                    <h3 class="text-4xl font-bold text-primary">{{ stats.totalUsers }}</h3>
-                                    <span class="text-gray-500 font-semibold">Total Active Users</span>
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box green">
+                                <mat-icon>cloud_sync</mat-icon>
+                            </div>
+                            <div class="stat-details">
+                                <span class="label">Total Requests</span>
+                                <h3 class="value">{{ systemStats?.requestCount || 0 }}</h3>
+                            </div>
+                        </div>
+
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box red">
+                                <mat-icon>error_outline</mat-icon>
+                            </div>
+                            <div class="stat-details">
+                                <span class="label">Status Errors</span>
+                                <h3 class="value">{{ systemStats?.errorCount || 0 }}</h3>
+                            </div>
+                        </div>
+
+                        <div class="glass-card stat-card">
+                            <div class="stat-icon-box orange">
+                                <mat-icon>memory</mat-icon>
+                            </div>
+                            <div class="stat-details">
+                                <span class="label">Memory Usage</span>
+                                <h3 class="value">{{ systemStats?.memory?.rss || 0 }} MB</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Server Logs -->
+                    <mat-card class="modern-card"
+                        style="background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; overflow: hidden;">
+                        <mat-card-header
+                            style="background: #161b22; padding: 16px; border-bottom: 1px solid #30363d; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <mat-icon style="color: #58a6ff;">terminal</mat-icon>
+                                <span style="font-family: monospace; font-weight: bold; font-size: 1.1em;">Live Server
+                                    Traffic (Poll 2s)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div
+                                    style="width: 8px; height: 8px; background: #3fb950; border-radius: 50%; box-shadow: 0 0 8px #3fb950;">
                                 </div>
-                                <div class="growth-stat mt-8">
-                                    <span class="text-success flex items-center justify-center gap-2">
-                                        <mat-icon>trending_up</mat-icon>
-                                        +{{ userGrowth[userGrowth.length-1].users -
-                                        userGrowth[userGrowth.length-2].users }} New
-                                    </span>
-                                    <small>vs last month</small>
-                                </div>
-                            </mat-card-content>
-                        </mat-card>
+                                <span style="font-size: 0.8rem; color: #3fb950;">CONNECTED</span>
+                            </div>
+                        </mat-card-header>
+
+                        <mat-card-content
+                            style="height: 500px; overflow-y: auto; padding: 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px;">
+                            <div *ngIf="!systemStats?.logs?.length"
+                                style="padding: 24px; text-align: center; color: #8b949e;">
+                                Listening for traffic...
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #161b22; position: sticky; top: 0;">
+                                    <tr style="color: #8b949e; text-align: left;">
+                                        <th style="padding: 8px 16px; border-bottom: 1px solid #30363d;">TIME</th>
+                                        <th style="padding: 8px 16px; border-bottom: 1px solid #30363d;">METHOD</th>
+                                        <th style="padding: 8px 16px; border-bottom: 1px solid #30363d;">ROUTE</th>
+                                        <th style="padding: 8px 16px; border-bottom: 1px solid #30363d;">STATUS</th>
+                                        <th style="padding: 8px 16px; border-bottom: 1px solid #30363d;">LATENCY</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let log of systemStats?.logs"
+                                        style="border-bottom: 1px solid #21262d; transition: background 0.2s;"
+                                        class="log-row">
+                                        <td style="padding: 8px 16px; color: #8b949e; white-space: nowrap;">{{
+                                            log.timestamp | date:'HH:mm:ss.SSS' }}</td>
+                                        <td style="padding: 8px 16px; font-weight: bold;"
+                                            [style.color]="log.method === 'GET' ? '#79c0ff' : log.method === 'POST' ? '#7ee787' : log.method === 'DELETE' ? '#ff7b72' : '#d2a8ff'">
+                                            {{ log.method }}
+                                        </td>
+                                        <td style="padding: 8px 16px; color: #c9d1d9;">{{ log.path }}</td>
+                                        <td style="padding: 8px 16px;">
+                                            <span
+                                                [style.color]="log.status < 300 ? '#3fb950' : log.status < 400 ? '#e3b341' : '#ff7b72'"
+                                                style="font-weight: bold;">
+                                                {{ log.status }}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 8px 16px;">
+                                            <span
+                                                [style.color]="log.duration < 100 ? '#79c0ff' : log.duration < 500 ? '#e3b341' : '#ff7b72'">
+                                                {{ log.duration }}ms
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <!-- Restaurant Quick Stats -->
+                    <div class="mt-8">
+                        <h3 style="margin-bottom: 16px; font-weight: bold;">Platform Metrics</h3>
+                        <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                            <mat-card class="modern-card">
+                                <mat-card-header>
+                                    <mat-card-title>Monthly Revenue Trend</mat-card-title>
+                                </mat-card-header>
+                                <mat-card-content class="chart-content">
+                                    <div class="bar-chart-mock">
+                                        <div *ngFor="let data of monthlyRevenue" class="bar"
+                                            [style.height.%]="(data.value / getMaxRevenue()) * 100"
+                                            [matTooltip]="data.month + ': ₹' + (data.value | number)">
+                                        </div>
+                                    </div>
+                                    <div class="chart-labels">
+                                        <span *ngFor="let data of monthlyRevenue">{{ data.month }}</span>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+
+                            <mat-card class="modern-card">
+                                <mat-card-header>
+                                    <mat-card-title>Platform User Growth</mat-card-title>
+                                </mat-card-header>
+                                <mat-card-content class="chart-content">
+                                    <div class="growth-stat">
+                                        <h3 class="text-4xl font-bold text-primary">{{ stats.totalUsers }}</h3>
+                                        <span class="text-gray-500 font-semibold">Total Active Users</span>
+                                    </div>
+                                    <div class="growth-stat mt-8">
+                                        <span class="text-success flex items-center justify-center gap-2">
+                                            <mat-icon>trending_up</mat-icon>
+                                            +{{ userGrowth[userGrowth.length-1].users -
+                                            userGrowth[userGrowth.length-2].users }} New
+                                        </span>
+                                        <small>vs last month</small>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        </div>
                     </div>
                 </div>
 
@@ -412,11 +571,12 @@
                     <div class="profile-layout grid grid-cols-1 md:grid-cols-3 gap-6">
                         <mat-card class="modern-card col-span-1 text-center p-6">
                             <div class="profile-avatar-lg mx-auto mb-4">
-                                <img [src]="'https://ui-avatars.com/api/?name=Admin+User&background=4318ff&color=fff&size=128'"
-                                    class="rounded-full">
+                                <div class="avatar-circle-large">
+                                    <span class="avatar-initials-large">{{getAdminInitials()}}</span>
+                                </div>
                             </div>
-                            <h2 class="text-xl font-bold">System Admin</h2>
-                            <p class="text-gray-500 mb-4">admin@sysqueue.com</p>
+                            <h2 class="text-xl font-bold">{{adminProfileForm.get('name')?.value || 'System Admin'}}</h2>
+                            <p class="text-gray-500 mb-4">{{adminProfileForm.get('contact_info')?.value || 'admin'}}</p>
                             <span class="role-badge mb-4 inline-block">Super Admin</span>
                             <div class="w-full border-t pt-4 mt-4">
                                 <p class="text-sm text-gray-400">Member Since</p>
@@ -425,24 +585,70 @@
                         </mat-card>
 
                         <mat-card class="modern-card col-span-2 p-6">
-                            <h3 class="text-lg font-bold mb-6">Security Settings</h3>
-                            <form class="flex flex-col gap-4">
+                            <h3 class="text-lg font-bold mb-6">Profile Settings</h3>
+                            <form [formGroup]="adminProfileForm" class="flex flex-col gap-4">
                                 <mat-form-field appearance="outline">
-                                    <mat-label>Current Password</mat-label>
-                                    <input matInput type="password">
+                                    <mat-label>Full Name</mat-label>
+                                    <input matInput formControlName="name" placeholder="Enter your full name">
+                                    <mat-icon matSuffix>person</mat-icon>
+                                    <mat-error *ngIf="adminProfileForm.get('name')?.hasError('required')">
+                                        Name is required
+                                    </mat-error>
                                 </mat-form-field>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <mat-form-field appearance="outline">
-                                        <mat-label>New Password</mat-label>
-                                        <input matInput type="password">
-                                    </mat-form-field>
-                                    <mat-form-field appearance="outline">
-                                        <mat-label>Confirm Password</mat-label>
-                                        <input matInput type="password">
-                                    </mat-form-field>
+
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Username</mat-label>
+                                    <input matInput formControlName="contact_info" placeholder="Enter username">
+                                    <mat-icon matSuffix>account_circle</mat-icon>
+                                    <mat-error *ngIf="adminProfileForm.get('contact_info')?.hasError('required')">
+                                        Username is required
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <h3 class="text-lg font-bold mb-2 mt-4">Security Settings</h3>
+                                <p class="text-sm text-gray-500 mb-4">Leave password fields blank to keep current
+                                    password</p>
+
+                                <mat-form-field appearance="outline">
+                                    <mat-label>New Password</mat-label>
+                                    <input matInput [type]="hidePassword ? 'password' : 'text'"
+                                        formControlName="password" placeholder="Enter new password">
+                                    <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword"
+                                        type="button">
+                                        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                                    </button>
+                                    <mat-hint>Leave blank to keep current password</mat-hint>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" *ngIf="adminProfileForm.get('password')?.value">
+                                    <mat-label>Confirm Password</mat-label>
+                                    <input matInput [type]="hidePassword ? 'password' : 'text'"
+                                        formControlName="confirmPassword" placeholder="Confirm new password">
+                                    <mat-icon matSuffix>lock</mat-icon>
+                                    <mat-error *ngIf="adminProfileForm.get('confirmPassword')?.hasError('required')">
+                                        Please confirm password
+                                    </mat-error>
+                                    <mat-error *ngIf="adminProfileForm.hasError('passwordMismatch')">
+                                        Passwords do not match
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <div class="password-warning" *ngIf="adminProfileForm.get('password')?.value">
+                                    <mat-icon>info</mat-icon>
+                                    <span>You will need to login again with your new password</span>
                                 </div>
-                                <div class="flex justify-end mt-2">
-                                    <button mat-flat-button color="primary">Update Password</button>
+
+                                <div class="flex justify-end mt-4 gap-3">
+                                    <button mat-button type="button" (click)="resetProfileForm()">
+                                        Cancel
+                                    </button>
+                                    <button mat-flat-button color="primary" (click)="updateAdminProfile()"
+                                        [disabled]="adminProfileForm.invalid || isUpdatingProfile">
+                                        <mat-spinner *ngIf="isUpdatingProfile" diameter="20"
+                                            class="inline-block mr-2"></mat-spinner>
+                                        <mat-icon *ngIf="!isUpdatingProfile">save</mat-icon>
+                                        {{isUpdatingProfile ? 'Updating...' : 'Update Profile'}}
+                                    </button>
                                 </div>
                             </form>
                         </mat-card>
