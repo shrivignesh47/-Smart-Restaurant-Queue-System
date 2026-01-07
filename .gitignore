@@ -85,7 +85,6 @@ dist
 .tern-port
 
 .vscode-test
-*.md
 .pnp.*
 .yarn/*
 !.yarn/patches
