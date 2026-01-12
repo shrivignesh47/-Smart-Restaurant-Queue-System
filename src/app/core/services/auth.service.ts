@@ -36,6 +36,7 @@ export class AuthService {
     private apiUrl = `${environment.apiUrl}/auth`;
     private userSubject = new BehaviorSubject<User | null>(null);
     public user$ = this.userSubject.asObservable();
+    currentUser: any;
 
     constructor(private http: HttpClient, private router: Router) {
         this.loadUserFromStorage();

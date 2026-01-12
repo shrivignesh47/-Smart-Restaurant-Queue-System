@@ -29,8 +29,6 @@ export class AuthService {
   }
 
   login(phone: string, name: string): Observable<boolean> {
-    // Mock login logic
-    // Generate avatar using UI Avatars API
     const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=667eea&color=fff&size=128&bold=true`;
 
     const user: User = {
