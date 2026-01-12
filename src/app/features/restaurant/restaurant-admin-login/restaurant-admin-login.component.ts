@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AuthService } from '../../../core/services/auth.service';
+import { HttpClient } from '@angular/common/http';
 import { RestaurantService, Restaurant } from '../../../core/services/restaurant.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-restaurant-admin-login',
@@ -22,7 +23,7 @@ export class RestaurantAdminLoginComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
-    private authService: AuthService,
+    private http: HttpClient,
     private restaurantService: RestaurantService
   ) {
     this.loginForm = this.fb.group({
@@ -48,7 +49,7 @@ export class RestaurantAdminLoginComponent implements OnInit {
       });
     }
 
-    // Check if already logged in
+    // Check if already logged in as manager for this restaurant
     const managerToken = localStorage.getItem(`manager_${this.restaurantName}`);
     if (managerToken) {
       this.router.navigate([this.restaurantName, 'admin', 'dashboard']);
@@ -61,30 +62,29 @@ export class RestaurantAdminLoginComponent implements OnInit {
     this.isLoading = true;
     const { username, password } = this.loginForm.value;
 
-    this.authService.login(username, password).subscribe({
+    // Use direct HTTP call to avoid overwriting customer session
+    // Manager session is stored separately with restaurant-specific key
+    this.http.post<any>(`${environment.apiUrl}/auth/login`, { username, password }).subscribe({
       next: (response) => {
         this.isLoading = false;
 
-        if (response.role === 'RestaurantAdmin') {
+        if (response.role === 'RestaurantAdmin' || response.role === 'RestaurantStaff') {
           // Check if this manager belongs to THIS restaurant
           if (response.restaurant_id == this.targetRestaurant?.id) {
             this.proceedToDashboard(response);
           } else {
-            this.authService.logout();
             this.snackBar.open(`Access denied. You are not a manager for ${this.targetRestaurant?.name || this.restaurantName}`, 'Close', {
               duration: 5000,
               panelClass: ['error-snackbar']
             });
           }
         } else if (response.role === 'Admin') {
-          this.authService.logout();
           this.snackBar.open('Super Admins must login via the System Admin portal, not individual restaurant portals.', 'Close', {
             duration: 5000,
             panelClass: ['error-snackbar']
           });
         } else {
-          this.authService.logout();
-          this.snackBar.open('Invalid account role for this portal.', 'Close', {
+          this.snackBar.open('Invalid account role for this portal. Only Restaurant Managers can login here.', 'Close', {
             duration: 4000,
             panelClass: ['error-snackbar']
           });
@@ -103,6 +103,7 @@ export class RestaurantAdminLoginComponent implements OnInit {
   }
 
   private proceedToDashboard(response: any): void {
+    // Store manager session with restaurant-specific key (separate from customer session)
     localStorage.setItem(`manager_${this.restaurantName}`, response.accessToken);
     localStorage.setItem(`managerData_${this.restaurantName}`, JSON.stringify(response));
 
